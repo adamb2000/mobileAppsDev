@@ -1,17 +1,20 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity,Image } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 const image = require('./spacebook.jpg');
 
 
-export default function App() {
+function Login() {
   const [name, setName] = useState("");
   const [name2, setName2] = useState("");
   return (
     <View style={styles.outerContainer}>
       <View style={styles.Title}>
-        <Text style={{fontSize:50}}>SPACEBOOK</Text>
-        <Image source={{ uri: 'https://lco.global/static/img/Space-Book-Logo.06e53df5029e.jpg' }} style={{width: 300,height: 200}}></Image>
+        <Text style={{fontSize:50, color: 'blue'}}>SPACEBOOK</Text>
+        <Image source={{ uri: 'https://lco.global/static/img/Space-Book-Logo.06e53df5029e.jpg' }} style={{width: 250,height: 250}}></Image>
       </View>
       <View style={styles.innerContainer}>
         <TextInput style={styles.input} placeholder="Username" onChangeText={(value) => setName(value)}/>
@@ -31,18 +34,39 @@ export default function App() {
 }
 
 
+
+
+const Stack = createNativeStackNavigator();
+
+function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Login" component={Login} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+
+
+
+
+export default App;
+
+
 const styles = StyleSheet.create({
   outerContainer: {
     width: 393,
     height: 851,
-    backgroundColor: 'blue',
+    backgroundColor: 'whiet',
     alignItems: 'center',
     justifyContent: 'center',
   },
   innerContainer:{
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 150,
+    marginBottom: 100,
     flex:1,
   },
   Title:{

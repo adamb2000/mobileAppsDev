@@ -1,2 +1,2 @@
 # mobileAppsDev
-Coursework repo for mobile apps coursework
+Repo for mobile apps coursework

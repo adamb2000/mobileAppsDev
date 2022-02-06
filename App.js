@@ -3,35 +3,43 @@ import { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity,Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import HomePage from './HomePage.js';
+import SignUp from './SignUp.js';
 
 const image = require('./spacebook.jpg');
 
 
-function Login() {
+function Login({navigation}) {
   const [name, setName] = useState("");
   const [name2, setName2] = useState("");
   return (
     <View style={styles.outerContainer}>
       <View style={styles.Title}>
-        <Text style={{fontSize:50, color: 'blue'}}>SPACEBOOK</Text>
-        <Image source={{ uri: 'https://lco.global/static/img/Space-Book-Logo.06e53df5029e.jpg' }} style={{width: 250,height: 250}}></Image>
+        <Image source={image} style={{width: 250,height: 250}}></Image>
+        <Text style={{fontSize:50, color: '#252525'}}>SPACEBOOK</Text>
       </View>
-      <View style={styles.innerContainer}>
+      <View style={styles.inputContainer}>
         <TextInput style={styles.input} placeholder="Username" onChangeText={(value) => setName(value)}/>
         <TextInput style={styles.input} placeholder="Password" onChangeText={(value) => setName2(value)}/>
-        <TouchableOpacity style={styles.touchableOpacity}>
-          <View>
-            <Text>
-              Log In
-            </Text>
-          </View>
+      </View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.touchableOpacity} onPress={() => navigation.navigate('HomePage')}>
+          <Text style={styles.buttonText}>
+            Log In
+          </Text> 
         </TouchableOpacity>
-        <Text>Welcome: {name}</Text>
-        <Text>Welcome: {name2}</Text>
+        <TouchableOpacity style={styles.touchableOpacity} onPress={() => navigation.navigate('SignUp')}>
+        <Text style={styles.buttonText}>
+            Sign Up
+          </Text> 
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
+
+
+
 
 
 
@@ -41,8 +49,10 @@ const Stack = createNativeStackNavigator();
 function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator screenOptions={{headerShown:false}}>
         <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="SignUp" component={SignUp} />
+        <Stack.Screen name="HomePage" component={HomePage} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -59,19 +69,22 @@ const styles = StyleSheet.create({
   outerContainer: {
     width: 393,
     height: 851,
-    backgroundColor: 'whiet',
+    backgroundColor: 'white',
+    alignItems: 'center',
+  },
+  inputContainer:{
+    marginTop: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  innerContainer:{
+  buttonContainer:{
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 100,
-    flex:1,
   },
   Title:{
-    flex:1,
     marginTop:50,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   input:{
     width:300,
@@ -79,14 +92,20 @@ const styles = StyleSheet.create({
     alignItems:'center',
     border: 'solid',
     borderRadius: 100,
-    marginBottom: 9,
+    marginBottom: 10,
     backgroundColor: 'white',
   },
   touchableOpacity:{
-    width: 150,
+    width: 130,
+    height: 20,
+    marginTop:10,
     border: 'solid',
     borderRadius: 100,
     alignItems: 'center',
-    backgroundColor: 'red',
-  }
+    justifyContent: 'center',
+    backgroundColor: "#252525",
+  },
+  buttonText:{
+    color: "white",
+  },
 });

@@ -9,8 +9,10 @@ const image = require('./spacebook.jpg');
 function SignUp({navigation}) {
   const [firstName, setFirstName] = useState("");
   const [secondName, setSecondName] = useState("");
-  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+
   return (
     <View style={styles.outerContainer}>
       <View style={styles.Title}>
@@ -20,11 +22,11 @@ function SignUp({navigation}) {
       <View style={styles.inputContainer}>
         <TextInput style={styles.input} textAlign='center' placeholder="First Name" onChangeText={(value) => setFirstName(value)}/>
         <TextInput style={styles.input} placeholder="Second Name" onChangeText={(value) => setSecondName(value)}/>
-        <TextInput style={styles.input} placeholder="Username" onChangeText={(value) => setUserName(value)}/>
+        <TextInput style={styles.input} placeholder="Email" onChangeText={(value) => setEmail(value)}/>
         <TextInput style={styles.input} placeholder="Password" onChangeText={(value) => setPassword(value)}/>
       </View>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.touchableOpacity} onPress={() => navigation.navigate('HomePage')}>
+        <TouchableOpacity style={styles.touchableOpacity} onPress={newUserApiCall}>
         <Text style={styles.buttonText}>
             Submit
           </Text> 
@@ -37,6 +39,24 @@ function SignUp({navigation}) {
       </View>
     </View>
   );
+
+  function newUserApiCall(){
+    fetch("http://localhost:3333/api/1.0.0/user",{
+        method: 'POST',
+        headers: {
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            first_name: firstName,
+            last_name:  secondName,
+            email: email,
+            password: password,
+        })
+    })
+    .then(data => {
+        console.log(data);
+    });
+  }
 }
 
 
@@ -71,6 +91,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     marginBottom: 10,
     backgroundColor: 'white',
+    textAlign: 'center',
   },
   touchableOpacity:{
     width: 130,

@@ -1,8 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity,Image } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const image = require('./spacebook.jpg');
 
 
@@ -10,46 +9,81 @@ const image = require('./spacebook.jpg');
 function Login({navigation}) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [unsuccessful, setUnsuccessful] = useState(false);
 
     return (
-      <View style={styles.outerContainer}>
-        <View style={styles.Title}>
-          <Image source={image} style={{width: 250,height: 250}}></Image>
-          <Text style={{fontSize:50, color: '#252525'}}>SPACEBOOK</Text>
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput style={styles.input} placeholder="Email" onChangeText={(value) => setEmail(value)}/>
-          <TextInput style={styles.input} placeholder="Password" onChangeText={(value) => setPassword(value)}/>
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={loginApiCall}>
+      <ScrollView>
+        <View style={styles.outerContainer}>
+          <View style={styles.Title}>
+            <Image source={image} style={{width: 250,height: 250}}></Image>
+            <Text style={{fontSize:50, color: '#252525'}}>SPACEBOOK</Text>
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput style={styles.input} placeholder="Email" onChangeText={(value) => setEmail(value)}/>
+            <TextInput style={styles.input} placeholder="Password" onChangeText={(value) => setPassword(value)}/>
+          </View>
+          {warning()}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.touchableOpacity} onPress={loginApiCall}>
+              <Text style={styles.buttonText}>
+                Log In
+              </Text> 
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.touchableOpacity} onPress={() => navigation.navigate('SignUp')}>
             <Text style={styles.buttonText}>
-              Log In
-            </Text> 
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => navigation.navigate('SignUp')}>
-          <Text style={styles.buttonText}>
-              Sign Up
-            </Text> 
-          </TouchableOpacity>
+                Sign Up
+              </Text> 
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     );
   
-    function loginApiCall(){
-        fetch("http://localhost:3333/api/1.0.0/login",{
-            method: 'POST',
-            headers: {
-                'content-type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: email,
-                password: password,
-            })
-        })
-        .then(data => {
-            console.log(data);
-        });
+  
+    async function loginApiCall(){
+      const response = await fetch("http://localhost:3333/api/1.0.0/login",{
+          method: 'POST',
+          headers: {
+              'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+              email: email,
+              password: password,
+          })
+      })
+      if(response.status ==200){
+        setUnsuccessful(false);
+        const body = await response.json();
+          try {
+            await AsyncStorage.setItem('token', body.token)
+            await AsyncStorage.setItem('id', body.id)
+          } 
+          catch (e) {
+            console.log("error",e);
+          }
+        navigation.navigate('HomePage');
+        console.log(body.token);
+      }
+      else{
+        setUnsuccessful(true);
+      }
+    
+      console.log(response.status);
+
+      
+    
+
+  }
+
+
+
+    function warning(){
+        if(unsuccessful==true){
+            return(<View>
+                <Text style={{fontSize:20, color: 'red'}}>Invalid Credentials</Text>
+            </View>);
+            
+        }
     }
     
 }

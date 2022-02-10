@@ -15,18 +15,23 @@ function HomePage({navigation}) {
   useEffect(()=>{
     getData();
   },[]);
-  
+
   if(loaded){
     return (
-      <View style={styles.outerContainer}>
-        <View style={styles.Title}>
-          <Text style={{fontSize:50, color: 'blue'}}>SPACEBOOK</Text>
+      <ScrollView>
+        <View style={styles.outerContainer}>
+          <View style={styles.Title}>
+            <Text style={{fontSize:50, color: 'blue'}}>SPACEBOOK</Text>
+          </View>
+          <View style={styles.innerContainer}> 
+            <Text>Welcome: {firstName}</Text>
+            <Text>Welcome: {secondName}</Text>
+          </View>
+          <View style={styles.bottomNavigation}>
+            <Text style={{fontSize:50, color: 'blue'}}>SPACEBOooOK</Text>
+          </View>
         </View>
-        <View style={styles.innerContainer}> 
-          <Text>Welcome: {firstName}</Text>
-          <Text>Welcome: {secondName}</Text>
-        </View>
-      </View>
+      </ScrollView>
     );
   }
   else{
@@ -34,6 +39,7 @@ function HomePage({navigation}) {
       <View><Text>Loading</Text></View>
     )
   }
+
 
 
   async function getData(){
@@ -60,40 +66,31 @@ function HomePage({navigation}) {
   }
 }
 
-export default HomePage;
+
 
 const styles = StyleSheet.create({
   outerContainer: {
-    width: 393,
-    height: 851,
-    backgroundColor: 'Black',
     alignItems: 'center',
     justifyContent: 'center',
+    flex:1,
+    backgroundColor:'yellow',
+  },
+  bottomNavigation:{
+    flex:1,
+    backgroundColor:'red',
   },
   innerContainer:{
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 100,
-    flex:1,
+    flex:4,
+    backgroundColor:'blue',
   },
   Title:{
     flex:1,
     marginTop:50,
+    backgroundColor:'red',
   },
-  input:{
-    width:300,
-    height:40,
-    alignItems:'center',
-    border: 'solid',
-    borderRadius: 100,
-    marginBottom: 9,
-    backgroundColor: 'white',
-  },
-  touchableOpacity:{
-    width: 150,
-    border: 'solid',
-    borderRadius: 100,
-    alignItems: 'center',
-    backgroundColor: 'red',
-  }
 });
+
+export default HomePage;

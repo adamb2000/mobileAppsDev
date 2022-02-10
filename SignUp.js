@@ -1,8 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity,Image } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 const image = require('./spacebook.jpg');
 
 
@@ -12,32 +10,33 @@ function SignUp({navigation}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-
   return (
-    <View style={styles.outerContainer}>
-      <View style={styles.Title}>
-        <Image source={image} style={{width: 250,height: 250}}></Image>
-        <Text style={{fontSize:50, color: '#252525'}}>SPACEBOOK</Text>
+    <ScrollView style={styles.scrollView}>
+      <View style={styles.outerContainer}>
+        <View style={styles.Title}>
+          <Image source={image} style={{width: 250,height: 250}}></Image>
+          <Text style={{fontSize:50, color: '#252525'}}>SPACEBOOK</Text>
+        </View>
+        <View style={styles.inputContainer}>
+          <TextInput style={styles.input} textAlign='center' placeholder="First Name" onChangeText={(value) => setFirstName(value)}/>
+          <TextInput style={styles.input} placeholder="Second Name" onChangeText={(value) => setSecondName(value)}/>
+          <TextInput style={styles.input} placeholder="Email" onChangeText={(value) => setEmail(value)}/>
+          <TextInput style={styles.input} placeholder="Password" onChangeText={(value) => setPassword(value)}/>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.touchableOpacity} onPress={newUserApiCall}>
+          <Text style={styles.buttonText}>
+              Submit
+            </Text> 
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.touchableOpacity} onPress={() => navigation.navigate('Login')}>
+          <Text style={styles.buttonText}>
+              Back To Login
+            </Text> 
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.inputContainer}>
-        <TextInput style={styles.input} textAlign='center' placeholder="First Name" onChangeText={(value) => setFirstName(value)}/>
-        <TextInput style={styles.input} placeholder="Second Name" onChangeText={(value) => setSecondName(value)}/>
-        <TextInput style={styles.input} placeholder="Email" onChangeText={(value) => setEmail(value)}/>
-        <TextInput style={styles.input} placeholder="Password" onChangeText={(value) => setPassword(value)}/>
-      </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.touchableOpacity} onPress={newUserApiCall}>
-        <Text style={styles.buttonText}>
-            Submit
-          </Text> 
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.touchableOpacity} onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.buttonText}>
-            Back To Login
-          </Text> 
-        </TouchableOpacity>
-      </View>
-    </View>
+    </ScrollView>
   );
 
   function newUserApiCall(){
@@ -63,9 +62,12 @@ function SignUp({navigation}) {
 
 
 const styles = StyleSheet.create({
+  scrollView:{
+    flex:1,
+    backgroundColor: 'white',
+  },
   outerContainer: {
-    width: 393,
-    height: 851,
+    flex:1,
     backgroundColor: 'white',
     alignItems: 'center',
   },

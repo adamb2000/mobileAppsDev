@@ -93,6 +93,10 @@ function Login({navigation}) {
 
 
   const styles = StyleSheet.create({
+    scrollView:{
+      flex:1,
+      backgroundColor: 'white',
+    },
     outerContainer: {
       width: 393,
       height: 851,

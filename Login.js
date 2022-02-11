@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity,Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';

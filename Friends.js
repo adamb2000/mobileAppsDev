@@ -6,7 +6,7 @@ const image = require('./spacebook.jpg');
 
 
 
-function HomePage({navigation}) {
+function Friends({navigation}) {
   const [firstName, setFirstName] = useState("");
   const [secondName, setSecondName] = useState("");
   const [loaded, setLoaded] = useState(false);
@@ -20,14 +20,14 @@ function HomePage({navigation}) {
       <ScrollView>
         <View style={styles.outerContainer}>
           <View style={styles.Title}>
-            <Text style={{fontSize:50, color: 'blue'}}>SPACEBOOK</Text>
+            <Text style={{fontSize:50, color: 'blue'}}>Friends</Text>
           </View>
           <View style={styles.innerContainer}> 
             <Text>Welcome: {firstName}</Text>
             <Text>Welcome: {secondName}</Text>
           </View>
           <View style={styles.bottomNavigation}>
-            <Text style={{fontSize:50, color: 'blue'}}>SPACEBOooOK</Text>
+            <Text style={{fontSize:50, color: 'blue'}}>Friends</Text>
           </View>
         </View>
       </ScrollView>
@@ -66,30 +66,29 @@ function HomePage({navigation}) {
 }
 
 
-
 const styles = StyleSheet.create({
-  outerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex:1,
-    backgroundColor:'yellow',
-  },
-  bottomNavigation:{
-    flex:1,
-    backgroundColor:'red',
-  },
-  innerContainer:{
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 100,
-    flex:4,
-    backgroundColor:'blue',
-  },
-  Title:{
-    flex:1,
-    marginTop:50,
-    backgroundColor:'red',
-  },
-});
-
-export default HomePage;
+    outerContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      flex:1,
+      backgroundColor:'yellow',
+    },
+    bottomNavigation:{
+      flex:1,
+      backgroundColor:'red',
+    },
+    innerContainer:{
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 100,
+      flex:4,
+      backgroundColor:'blue',
+    },
+    Title:{
+      flex:1,
+      marginTop:50,
+      backgroundColor:'red',
+    },
+  });
+  
+  export default Friends;

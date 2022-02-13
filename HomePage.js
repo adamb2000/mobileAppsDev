@@ -1,5 +1,5 @@
 import React , { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity,Image } from 'react-native';
+import { SafeAreaView,StyleSheet, Text, View, ScrollView,FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const image = require('./spacebook.jpg');
@@ -9,29 +9,58 @@ const image = require('./spacebook.jpg');
 function HomePage({navigation}) {
   const [firstName, setFirstName] = useState("");
   const [secondName, setSecondName] = useState("");
-  const [loaded, setLoaded] = useState(false);
-  
+  const [loaded, setLoaded] = useState(1);
+  const [newPostData, setNewPostData] = useState("");
+  const [refresh, setRefresh] = useState(true);
+  const [dataArray,setDataArray]=useState([]);
+
   useEffect(()=>{
-    getData();
+    getUserData();
+    getPostData();
   },[]);
 
-  if(loaded){
+  if(loaded ==3){
     return (
-      <ScrollView>
-        <View style={styles.outerContainer}>
-          <View style={styles.Title}>
-            <Text style={{fontSize:50, color: 'blue'}}>SPACEBOOK</Text>
-          </View>
-          <View style={styles.innerContainer}> 
-            <Text>Welcome: {firstName}</Text>
-            <Text>Welcome: {secondName}</Text>
-          </View>
-          <View style={styles.bottomNavigation}>
-            <Text style={{fontSize:50, color: 'blue'}}>SPACEBOooOK</Text>
-          </View>
+      <View style={styles.outerContainer}>
+        <View style={styles.inputContainer}>
+          <TextInput style={styles.input} textAlign='center' placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
+          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();getPostData();}}>
+            <Text style={styles.buttonText}>Submit Post</Text> 
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+        <View style={styles.Title}>
+          <Text style={{fontSize:40, color: '#252525'}}>My Wall</Text>
+        </View>
+        <View style={styles.innerContainer}>
+          <FlatList style={styles.flatList}          
+            data={dataArray} extraData={refresh} 
+            renderItem={({item}) => 
+            <View style={styles.listView}>
+              <Text style={{fontSize:10}}>{item.fName} {item.sName}</Text>
+              <Text style={{fontSize:20}}>{item.text}</Text>
+            </View>
+            }/>
+        </View>
+      </View>
     );
+  }
+  else if(loaded ==2){
+    return(
+      <View style={styles.outerContainer}>
+        <View style={styles.inputContainer}>
+          <TextInput style={styles.input} textAlign='center' placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
+          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();getPostData();}}>
+            <Text style={styles.buttonText}>Submit Post</Text> 
+          </TouchableOpacity>
+        </View>
+        <View style={styles.Title}>
+          <Text style={{fontSize:40, color: '#252525'}}>My Wall</Text>
+        </View>
+        <View style={styles.innerContainer}>
+          <Text style={{fontSize:10}}>No Posts Yet!</Text>
+        </View>
+      </View>
+    )
   }
   else{
     return(
@@ -41,28 +70,84 @@ function HomePage({navigation}) {
 
 
 
-  async function getData(){
+
+  async function getUserData(){
     const token = await AsyncStorage.getItem('token');
     const id = await AsyncStorage.getItem('id');
 
     const response = await fetch("http://localhost:3333/api/1.0.0/user/"+id,{
-        method: 'GET',
-        headers: {
-            'X-Authorization': token
-        },
+      method: 'GET',
+      headers: {
+        'X-Authorization': token
+      },
     });
     if(response.status==200){
       const body = await response.json();
       setFirstName(body.first_name);
       setSecondName(body.last_name);
-      setLoaded(true);
+      
     }
     else{
       console.log(response);
     }
-      
+  }
+
+
+  async function getPostData(){
+    const token = await AsyncStorage.getItem('token');
+    const id = await AsyncStorage.getItem('id');
+
+    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+id+"/post",{
+      method: 'GET',
+      headers: {
+        'X-Authorization': token
+      },
+    });
+    if(response.status ==200){
+      const body = await response.json();
+      if(body.length>0){
+        setDataArray([]);
+        for(let i=0;i<body.length;i++){
+          let key = body[i].post_id;
+          let text = body[i].text;
+          let time = body[i].timestamp;
+          let likes = body[i].numLikes;
+          let fName = body[i].author.first_name;
+          let sName = body[i].author.last_name;
+          let userID = body[i].author.user_id; 
+          setDataArray(old => [...old,{key,text,time,likes,fName,sName,userID}]);
+        }
+        setLoaded(3)
+      }
+      else{
+        setLoaded(2) 
+      }
+    }
+    else{
+        setLoaded(1); 
+    }
+    setRefresh(!refresh);
+  }
+
+
+
+  async function sendNewPostData(){
+    const token = await AsyncStorage.getItem('token');
+    const id = await AsyncStorage.getItem('id');
+
+    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+id+"/post",{
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'X-Authorization': token,
+      },
+      body: JSON.stringify({
+        text: newPostData,
+      })
+    });
     
   }
+
 }
 
 
@@ -72,23 +157,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex:1,
-    backgroundColor:'yellow',
+    backgroundColor:'white',
+    marginLeft:3,
+    marginRight:3,
   },
-  bottomNavigation:{
-    flex:1,
-    backgroundColor:'red',
+  inputContainer:{
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 3
+  },
+  input:{
+    width:300,
+    height:40,
+    alignItems:'center',
+    border: 'solid',
+    borderRadius: 100,
+    marginBottom: 5,
+    backgroundColor: 'white',
+    textAlign: 'center',
   },
   innerContainer:{
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 100,
-    flex:4,
-    backgroundColor:'blue',
+    flex:15,
+    minWidth: '100%',
+    
+  },
+  listView:{
+    borderWidth: 1,
+    borderRadius: 10,
+    marginBottom: 2,
+    padding: 5,
+    minWidth: '100%',
   },
   Title:{
+    flex:2,
+  },
+  touchableOpacity:{
+    width: 130,
+    height: 20,
+    marginTop:5,
+    border: 'solid',
+    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "#252525",
+  },
+  buttonText:{
+    color: "white",
+  },
+  flatList:{
+    minWidth: '100%',
     flex:1,
-    marginTop:50,
-    backgroundColor:'red',
   },
 });
 

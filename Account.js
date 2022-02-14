@@ -17,10 +17,23 @@ function Account({navigation}) {
 
   const [loaded, setLoaded] = useState(false);
   const [status, setStatus] = useState(1);
+  const [token,setToken] = useState("");
+  const [ID,setID] = useState("");
 
+
+  
   useEffect(()=>{
-    getData();
+    AsyncStorage.getItem('id').then((value)=>setID(value));
+    AsyncStorage.getItem('token').then((value)=>setToken(value));
   },[]);
+
+  useEffect(() => { 
+    if(token != ""){
+      getData();
+    }
+ },[token]);
+
+
 
   if(loaded){
     return (
@@ -58,10 +71,8 @@ function Account({navigation}) {
   }
 
   async function updateUserInfo(){
-    const token = await AsyncStorage.getItem('token');
-    const id = await AsyncStorage.getItem('id');
-
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+id,{
+    
+    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ID,{
         method: 'PATCH',
         headers: {
             'X-Authorization': token,

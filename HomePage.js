@@ -1,5 +1,5 @@
 import React , { useEffect, useState } from 'react';
-import { SafeAreaView,StyleSheet, Text, View, ScrollView,FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
+import {StyleSheet, Text, View, ScrollView,FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const image = require('./spacebook.jpg');
@@ -7,39 +7,54 @@ const image = require('./spacebook.jpg');
 
 
 function HomePage({navigation}) {
+  
+  const [ID,setID] = useState("");
   const [firstName, setFirstName] = useState("");
   const [secondName, setSecondName] = useState("");
   const [loaded, setLoaded] = useState(1);
   const [newPostData, setNewPostData] = useState("");
   const [refresh, setRefresh] = useState(true);
   const [dataArray,setDataArray]=useState([]);
+ 
 
   useEffect(()=>{
-    getUserData();
-    getPostData();
+    AsyncStorage.getItem('id').then((value)=>setID(value));
+    AsyncStorage.getItem('token').then((value)=>setToken(value));
   },[]);
 
+  useEffect(() => { 
+    if(token != ""){
+      getPostData();
+      getUserData();
+    }
+ },[token]);
+
+  
   if(loaded ==3){
     return (
       <View style={styles.outerContainer}>
+        <View style={styles.Title}>
+          <Text style={{fontSize:40, color: '#252525'}}>{firstName} {secondName}</Text>
+        </View>
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} textAlign='center' placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
           <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();getPostData();}}>
             <Text style={styles.buttonText}>Submit Post</Text> 
           </TouchableOpacity>
         </View>
-        <View style={styles.Title}>
-          <Text style={{fontSize:40, color: '#252525'}}>My Wall</Text>
-        </View>
         <View style={styles.innerContainer}>
           <FlatList style={styles.flatList}          
             data={dataArray} extraData={refresh} 
             renderItem={({item}) => 
             <View style={styles.listView}>
-              <Text style={{fontSize:10}}>{item.fName} {item.sName}</Text>
-              <Text style={{fontSize:20}}>{item.text}</Text>
+              <Text style={styles.listTextName}>{item.fName} {item.sName} at {item.time}</Text>
+              <Text style={styles.listText}>{item.text}</Text>
+              <View style={styles.listButtonView}>
+                <Text>Likes: {item.likes}</Text>
+                {getButtons(item)}
+              </View>
             </View>
-            }/>
+          }/>
         </View>
       </View>
     );
@@ -47,14 +62,14 @@ function HomePage({navigation}) {
   else if(loaded ==2){
     return(
       <View style={styles.outerContainer}>
+        <View style={styles.Title}>
+          <Text style={{fontSize:40, color: '#252525'}}>My Wall</Text>
+        </View>
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} textAlign='center' placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
           <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();getPostData();}}>
             <Text style={styles.buttonText}>Submit Post</Text> 
           </TouchableOpacity>
-        </View>
-        <View style={styles.Title}>
-          <Text style={{fontSize:40, color: '#252525'}}>My Wall</Text>
         </View>
         <View style={styles.innerContainer}>
           <Text style={{fontSize:10}}>No Posts Yet!</Text>
@@ -71,11 +86,41 @@ function HomePage({navigation}) {
 
 
 
-  async function getUserData(){
-    const token = await AsyncStorage.getItem('token');
-    const id = await AsyncStorage.getItem('id');
 
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+id,{
+
+  function getButtons(item){
+    //const id = await AsyncStorage.getItem('id');
+    console.log(item.userID);
+    console.log("yeeeeet"+ID);
+    if(item.userID == parseInt(ID)){
+      return(
+        <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => {editPost(item.key)}}>
+          <Text style={styles.buttonText}>Edit</Text>
+        </TouchableOpacity>
+      )
+    }
+    else{
+      return(
+        <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => {likePost(item.key)}}>
+          <Text style={styles.buttonText}>Like</Text>
+        </TouchableOpacity>
+      )
+    }
+  }
+
+  function editPost(key){
+    console.log("edit"+key);
+  }
+
+  function likePost(item){
+    console.log("like");
+  }
+
+  async function getUserData(){
+    //const token = await AsyncStorage.getItem('token');
+    //const id = await AsyncStorage.getItem('id');
+
+    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ID,{
       method: 'GET',
       headers: {
         'X-Authorization': token
@@ -92,15 +137,15 @@ function HomePage({navigation}) {
     }
   }
 
-
+ 
   async function getPostData(){
-    const token = await AsyncStorage.getItem('token');
-    const id = await AsyncStorage.getItem('id');
-
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+id+"/post",{
+    //const token = await AsyncStorage.getItem('token');
+    //const id = await AsyncStorage.getItem('id');
+    console.log("IDDDDDDDD: "+ID);
+    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ ID+"/post",{
       method: 'GET',
       headers: {
-        'X-Authorization': token
+        'X-Authorization':  token
       },
     });
     if(response.status ==200){
@@ -132,20 +177,21 @@ function HomePage({navigation}) {
 
 
   async function sendNewPostData(){
-    const token = await AsyncStorage.getItem('token');
-    const id = await AsyncStorage.getItem('id');
+    //const token = await AsyncStorage.getItem('token');
+    //const id = await AsyncStorage.getItem('id');
 
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+id+"/post",{
+    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ ID+"/post",{
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'X-Authorization': token,
+        'X-Authorization':  token,
       },
       body: JSON.stringify({
         text: newPostData,
       })
     });
-    
+    console.log("postdata");
+    return response;
   }
 
 }
@@ -181,14 +227,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex:15,
     minWidth: '100%',
-    
   },
   listView:{
-    borderWidth: 1,
+    borderWidth: 3,
     borderRadius: 10,
-    marginBottom: 2,
+    marginBottom: 3,
     padding: 5,
     minWidth: '100%',
+  },
+  listTextName:{
+    fontSize:10,
+  },
+  listText:{
+    fontSize:20,
+  },
+  listButtonView:{
+    alignItems: "center", 
+    marginTop:5,
+    flex: 1,
+    flexDirection: 'row'
   },
   Title:{
     flex:2,
@@ -197,6 +254,16 @@ const styles = StyleSheet.create({
     width: 130,
     height: 20,
     marginTop:5,
+    border: 'solid',
+    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "#252525",
+  },
+  listTouchableOpacity:{
+    width: 40,
+    height: 20,
+    marginLeft:5,
     border: 'solid',
     borderRadius: 100,
     alignItems: 'center',

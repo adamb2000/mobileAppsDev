@@ -1,5 +1,5 @@
 import React , { useEffect, useState } from 'react';
-import { StyleSheet, Text, View,FlatList, ScrollView, TextInput, TouchableOpacity,Image } from 'react-native';
+import { StyleSheet, Text, View,FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const image = require('./spacebook.jpg');
 
@@ -29,14 +29,14 @@ function Search({navigation}) {
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
           <Text style={{fontSize:50}}>Friends</Text>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {navigation.navigate('requests')}}>
+          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {navigation.navigate('Requests')}}>
             <Text style={styles.buttonText}>Requests: {requests}</Text> 
           </TouchableOpacity>
         </View>
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} placeholder="Search" onChangeText={(value) => setSearch(value)}/>
         </View>
-        <TouchableOpacity style={styles.touchableOpacity} onPress={() => {getSearchData()}}>
+        <TouchableOpacity style={styles.touchableOpacity} onPress={() => {getFriends()}}>
           <Text style={styles.buttonText}>Search</Text> 
         </TouchableOpacity>
         <View style={styles.innerContainer}> 
@@ -66,7 +66,7 @@ function Search({navigation}) {
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} placeholder="Search" onChangeText={(value) => setSearch(value)}/>
         </View>
-        <TouchableOpacity style={styles.touchableOpacity} onPress={() => {getSearchData()}}>
+        <TouchableOpacity style={styles.touchableOpacity} onPress={() => {getFriends()}}>
           <Text style={styles.buttonText}>Search</Text> 
         </TouchableOpacity>
         <View style={styles.innerContainer}> 
@@ -151,10 +151,9 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       flex:8,
       minWidth: '100%',
-      marginTop:10,
     },
     Title:{
-      flex:1,
+      flex:2,
       paddingTop: 20,
       alignItems:'center',
     },
@@ -208,7 +207,6 @@ const styles = StyleSheet.create({
     },
     userTouchableOpacity:{
       flex:1,
-      backgroundColor:'blue',
     },
     buttonText:{
       color: "white",

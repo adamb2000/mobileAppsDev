@@ -45,7 +45,6 @@ function LoggedIn() {
       <Tab.Screen name="HomePage" component={HomeScreen} options={{headerShown:false}}/>
       <Tab.Screen name="Friends" component={Friends} options={{headerShown:false}}/>
       <Tab.Screen name="Search" component={Search} options={{headerShown:false}}/>
-      
     </Tab.Navigator>
   );
 }

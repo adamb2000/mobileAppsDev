@@ -1,5 +1,5 @@
 import React , { useEffect, useState } from 'react';
-import { StyleSheet, Text, View,FlatList, ScrollView, TextInput, TouchableOpacity,Image } from 'react-native';
+import { StyleSheet, Text, View,FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const image = require('./spacebook.jpg');
 
@@ -13,6 +13,7 @@ function Search({navigation}) {
   const [refresh, setRefresh] = useState(true);
 
 
+
   useEffect(()=>{
     AsyncStorage.getItem('token').then((value)=>setToken(value));
   },[]);
@@ -22,7 +23,6 @@ function Search({navigation}) {
       getSearchData();
     }
  },[token]);
-
 
 
   if(loaded==3){
@@ -183,7 +183,6 @@ const styles = StyleSheet.create({
     },
     userTouchableOpacity:{
       flex:1,
-      backgroundColor:'blue',
     },
     buttonText:{
       color: "white",

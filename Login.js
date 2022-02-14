@@ -11,7 +11,7 @@ function Login({navigation}) {
     const [unsuccessful, setUnsuccessful] = useState(false);
 
     return (
-      <ScrollView>
+      <ScrollView contentContainerStyle={{flexGrow: 1}}>
         <View style={styles.outerContainer}>
           <View style={styles.Title}>
             <Image source={image} style={{width: 250,height: 250}}></Image>
@@ -60,7 +60,7 @@ function Login({navigation}) {
           catch (e) {
             console.log("error",e);
           }
-        navigation.navigate('HomePage');
+        navigation.navigate('LoggedIn');
         console.log(body.token);
       }
       else{
@@ -75,7 +75,7 @@ function Login({navigation}) {
   }
 
 
-
+  
     function warning(){
         if(unsuccessful==true){
             return(<View>
@@ -92,13 +92,8 @@ function Login({navigation}) {
 
 
   const styles = StyleSheet.create({
-    scrollView:{
-      flex:1,
-      backgroundColor: 'white',
-    },
     outerContainer: {
-      width: 393,
-      height: 851,
+      flex:1,
       backgroundColor: 'white',
       alignItems: 'center',
     },

@@ -12,7 +12,15 @@ function LogOut({navigation}){
         </View> 
     ); 
 
-    function DoLogOut(){
+    async function DoLogOut(){
+        const token = await AsyncStorage.getItem('token');
+        fetch("http://localhost:3333/api/1.0.0/logout",{
+          method: 'POST',
+          headers: {
+            'X-Authorization': token
+          },
+          
+      })
         AsyncStorage.removeItem('token');
         AsyncStorage.removeItem('id');
         navigation.navigate('Login')

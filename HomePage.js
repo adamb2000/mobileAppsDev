@@ -1,5 +1,5 @@
 import React , { useEffect, useState } from 'react';
-import {StyleSheet, Text, View, ScrollView,FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
+import {StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const image = require('./spacebook.jpg');
@@ -7,7 +7,7 @@ const image = require('./spacebook.jpg');
 
 
 function HomePage({navigation}) {
-  
+  const [token,setToken] = useState("");
   const [ID,setID] = useState("");
   const [firstName, setFirstName] = useState("");
   const [secondName, setSecondName] = useState("");

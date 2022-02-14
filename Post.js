@@ -1,5 +1,5 @@
 import React , { useEffect, useState } from 'react';
-import {StyleSheet, Text, View, ScrollView,FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
+import {StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const image = require('./spacebook.jpg');

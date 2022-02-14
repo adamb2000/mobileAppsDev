@@ -1,13 +1,14 @@
 import React , { useEffect, useState } from 'react';
-import { StyleSheet, Text, View,FlatList, ScrollView, TextInput, TouchableOpacity,Image } from 'react-native';
+import { StyleSheet, Text, View,FlatList, TouchableOpacity,Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const image = require('./spacebook.jpg');
 
 
 
-function Search({navigation}) {
+function Requests({navigation}) {
   const [token,setToken] = useState("");
   const [loaded, setLoaded] = useState(1);
+  const [refresh, setRefresh] = useState(true);
   const [dataArray, setDataArray] = useState([]);
 
   useEffect(()=>{
@@ -87,11 +88,11 @@ function Search({navigation}) {
                 setDataArray(old => [...old,{key,fName,sName,email}]);
             }
             setLoaded(3);
+            setRefresh(!refresh);
         }
         else{
             setLoaded(2);
         }
-      setRequests(body.length);
     }
   }
 
@@ -108,6 +109,7 @@ function Search({navigation}) {
         'X-Authorization': token
       },
     });
+    getRequests();
   }
 
   async function declineRequest(key){
@@ -119,6 +121,7 @@ function Search({navigation}) {
         'X-Authorization': token
       },
     });
+    getRequests();
   }
 
 
@@ -170,7 +173,7 @@ const styles = StyleSheet.create({
       flexDirection: 'row'
     },
     userTouchableOpacity:{
-      width: 40,
+        width: 60,
         height: 20,
         marginTop:5,
         border: 'solid',
@@ -184,4 +187,4 @@ const styles = StyleSheet.create({
     },
   });
   
-  export default Search;
+export default Requests;

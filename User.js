@@ -1,5 +1,5 @@
 import React , { useEffect, useState } from 'react';
-import {StyleSheet, Text, View, ScrollView,FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
+import {StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const image = require('./spacebook.jpg');
 
@@ -68,7 +68,7 @@ function HomePage({route, navigation}) {
     return(
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
-          <Text style={{fontSize:40, color: '#252525'}}>My Wall</Text>
+        <Text style={{fontSize:40, color: '#252525'}}>{firstName} {secondName}</Text>
         </View>
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} textAlign='center' placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
@@ -85,13 +85,18 @@ function HomePage({route, navigation}) {
   else if(loaded == 4){
     return(
         <View style={styles.outerContainer}>
-
+          <View style={styles.Title}>
+            <Text style={{fontSize:40, color: '#252525'}}>{firstName} {secondName}</Text>
+          </View>
+          <View style={styles.innerContainer}>
             <View><Text>You are not friends with {firstName} {secondName}</Text></View>
             <View>
-                <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => {addFriend()}}>
-                    <Text style={styles.buttonText}>Click Here</Text>
-                </TouchableOpacity></View>
-                <Text> To add them</Text>
+              <TouchableOpacity style={styles.touchableOpacity} onPress={() => {addFriend()}}>
+                <Text style={styles.buttonText}>Click Here</Text>
+              </TouchableOpacity>
+            </View>
+            <Text> To add them</Text>
+          </View>
         </View>
       )
   }
@@ -103,7 +108,6 @@ function HomePage({route, navigation}) {
 
 
   function getButtons(item){
-    //const id = await AsyncStorage.getItem('id');
     if(item.userID == ID){
       return(
         <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => {editPost(item.key)}}>
@@ -129,8 +133,6 @@ function HomePage({route, navigation}) {
   }
 
   async function getUserData(){
-    //const token = await AsyncStorage.getItem('token');
-
     const response = await fetch("http://localhost:3333/api/1.0.0/user/"+UserID,{
       method: 'GET',
       headers: {
@@ -155,8 +157,6 @@ function HomePage({route, navigation}) {
 
 
   async function addFriend(){
-    //const token = await AsyncStorage.getItem('token');
-
     const response = await fetch("http://localhost:3333/api/1.0.0/user/"+UserID+"/friends",{
       method: 'POST',
       headers: {
@@ -176,7 +176,6 @@ function HomePage({route, navigation}) {
 
 
   async function getPostData(){
-
     const response = await fetch("http://localhost:3333/api/1.0.0/user/"+UserID+"/post",{
       method: 'GET',
       headers: {
@@ -215,9 +214,6 @@ function HomePage({route, navigation}) {
 
 
   async function sendNewPostData(){
-    //const token = await AsyncStorage.getItem('token');
-    //const id = await AsyncStorage.getItem('id');
-
     const response = await fetch("http://localhost:3333/api/1.0.0/user/"+UserID+"/post",{
       method: 'POST',
       headers: {
@@ -299,7 +295,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#252525",
   },
   listTouchableOpacity:{
-    width: 120,
+    width: 40,
     height: 20,
     marginLeft:5,
     border: 'solid',
@@ -310,9 +306,6 @@ const styles = StyleSheet.create({
   },
   buttonText:{
     color: "white",
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 100,
   },
   flatList:{
     minWidth: '100%',

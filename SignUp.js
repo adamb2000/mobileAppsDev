@@ -10,7 +10,7 @@ function SignUp({navigation}) {
   const [password, setPassword] = useState("");
 
   return (
-    <ScrollView style={styles.scrollView}>
+    <ScrollView contentContainerStyle={{flexGrow: 1}}>
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
           <Image source={image} style={{width: 250,height: 250}}></Image>
@@ -61,10 +61,6 @@ function SignUp({navigation}) {
 
 
 const styles = StyleSheet.create({
-  scrollView:{
-    flex:1,
-    backgroundColor: 'white',
-  },
   outerContainer: {
     flex:1,
     backgroundColor: 'white',

@@ -12,6 +12,10 @@ import Friends from './Friends.js';
 import Search from './Search.js';
 import Account from './Account.js';
 import LogOut from './LogOut.js';
+import User from './User.js';
+import Post from './Post.js';
+import Requests from './Requests.js';
+
 
 const image = require('./spacebook.jpg');
 
@@ -25,7 +29,10 @@ function App() {
       <Stack.Navigator screenOptions={{headerShown:false}}>
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="SignUp" component={SignUp} />
-        <Stack.Screen name="HomePage" component={LoggedIn} />
+        <Stack.Screen name="LoggedIn" component={LoggedIn} />
+        <Stack.Screen name="User" component={User} options={{headerShown:true}}/>
+        <Stack.Screen name="Post" component={Post} options={{headerShown:true}}/>
+        <Stack.Screen name="Requests" component={Requests} options={{headerShown:true}}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -38,6 +45,7 @@ function LoggedIn() {
       <Tab.Screen name="HomePage" component={HomeScreen} options={{headerShown:false}}/>
       <Tab.Screen name="Friends" component={Friends} options={{headerShown:false}}/>
       <Tab.Screen name="Search" component={Search} options={{headerShown:false}}/>
+      
     </Tab.Navigator>
   );
 }

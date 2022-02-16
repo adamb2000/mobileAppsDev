@@ -14,6 +14,7 @@ function HomePage({route, navigation}) {
   const [newPostData, setNewPostData] = useState("");
   const [refresh, setRefresh] = useState(true);
   const [dataArray,setDataArray]=useState([]);
+  const [photo,setPhoto]=useState(null);
   const UserID = route.params.userID;
   
 
@@ -39,11 +40,12 @@ function HomePage({route, navigation}) {
     return (
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
+          <Image source={photo} style={{width: 100,height: 100}}></Image>
           <Text style={{fontSize:40, color: '#252525'}}>{firstName} {secondName}</Text>
         </View>
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} textAlign='center' placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();getPostData();}}>
+          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();}}>
             <Text style={styles.buttonText}>Submit Post</Text> 
           </TouchableOpacity>
         </View>
@@ -68,11 +70,12 @@ function HomePage({route, navigation}) {
     return(
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
-        <Text style={{fontSize:40, color: '#252525'}}>{firstName} {secondName}</Text>
+          <Image source={photo} style={{width: 100,height: 100}}></Image>
+          <Text style={{fontSize:40, color: '#252525'}}>{firstName} {secondName}</Text>
         </View>
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} textAlign='center' placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();getPostData();}}>
+          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();}}>
             <Text style={styles.buttonText}>Submit Post</Text> 
           </TouchableOpacity>
         </View>
@@ -148,7 +151,19 @@ function HomePage({route, navigation}) {
       
     }
     else{
-      console.log(response);
+      setFirstName("Error");
+      setSecondName("Error");
+    }
+    const imageResponse = await fetch("http://localhost:3333/api/1.0.0/user/"+UserID+"/photo",{
+      method: 'GET',
+      headers:{
+        'X-Authorization': token
+      },
+    });
+    if(imageResponse.status == 200)
+    {
+      const body = await imageResponse.blob();
+      setPhoto(URL.createObjectURL(body));
     }
   }
 
@@ -165,9 +180,6 @@ function HomePage({route, navigation}) {
     });
     if(response.status==200){ 
         navigation.navigate('User', {UserID});
-    }
-    else{
-      console.log(response);
     }
   }
 
@@ -224,10 +236,8 @@ function HomePage({route, navigation}) {
         text: newPostData,
       })
     });
-    console.log("postdata");
-    return response;
+    getPostData();
   }
-
 }
 
 
@@ -282,7 +292,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   Title:{
-    flex:2,
+    paddingTop:5,
+    flexDirection: 'row',
+    flex:3,
+    alignItems:'center',
   },
   touchableOpacity:{
     width: 130,

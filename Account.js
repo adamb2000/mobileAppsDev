@@ -9,6 +9,7 @@ function Account({navigation}) {
   const [firstName, setFirstName] = useState("");
   const [secondName, setSecondName] = useState("");
   const [email, setEmail] = useState("");
+  const [photo,setPhoto]=useState(null);
 
   const [newFirstName, setNewFirstName] = useState("");
   const [newSecondName, setNewSecondName] = useState("");
@@ -42,11 +43,17 @@ function Account({navigation}) {
           <View style={styles.Title}>
             <Text style={{fontSize:50, color: '#252525'}}>Account</Text>
           </View>
+          <View style={styles.imageContainer}>
+            <Image source={photo} style={{width: 100,height: 100}}></Image>
+            <TouchableOpacity style={styles.touchableOpacity} onPress={takePhoto}>
+              <Text style={styles.buttonText}>TakePhoto</Text> 
+            </TouchableOpacity>
+          </View>
           <View style={styles.innerContainer}>
-            <Text>Current Details:</Text>
-            <Text>First Name: {firstName}</Text>
-            <Text>Second Name: {secondName}</Text>
-            <Text>Email Address: {email}</Text>
+            <Text style={styles.text}>Current Details:</Text>
+            <Text style={styles.text}>First Name: {firstName}</Text>
+            <Text style={styles.text}>Second Name: {secondName}</Text>
+            <Text style={styles.text}>Email Address: {email}</Text>
             <View style={styles.inputContainer}>
               <TextInput style={styles.input} placeholder="First Name" onChangeText={(value) => setNewFirstName(value)}/>
               <TextInput style={styles.input} placeholder="Second Name" onChangeText={(value) => setNewSecondName(value)}/>
@@ -54,9 +61,7 @@ function Account({navigation}) {
               <TextInput style={styles.input} placeholder="Password" onChangeText={(value) => setNewPassword(value)}/>
             </View>
             <TouchableOpacity style={styles.touchableOpacity} onPress={updateUserInfo}>
-              <Text style={styles.buttonText}>
-                Submit New Details
-              </Text> 
+              <Text style={styles.buttonText}>Submit New Details</Text> 
             </TouchableOpacity>
             {warning()}
           </View>
@@ -70,8 +75,16 @@ function Account({navigation}) {
     )
   }
 
+
+
+
+  function takePhoto(){
+    console.log("phoho");
+  }
+
+
+
   async function updateUserInfo(){
-    
     const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ID,{
         method: 'PATCH',
         headers: {
@@ -93,7 +106,6 @@ function Account({navigation}) {
     }
     
   }
-
 
 
   function warning(){
@@ -133,9 +145,20 @@ function Account({navigation}) {
     else{
       console.log(response);
     }
-      
-    
+    const imageResponse = await fetch("http://localhost:3333/api/1.0.0/user/"+ID+"/photo",{
+      method: 'GET',
+      headers:{
+        'X-Authorization': token
+      },
+    });
+    if(imageResponse.status == 200)
+    {
+      const body = await imageResponse.blob();
+      setPhoto(URL.createObjectURL(body));
+    }
   }
+
+
 }
 
 
@@ -148,10 +171,17 @@ const styles = StyleSheet.create({
     },
     innerContainer:{
       alignItems: 'center',
-      flex:4,
+      flex:6,
     },
     Title:{
       flex:1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    imageContainer:{
+      flex:2,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     input:{
       width:300,
@@ -181,6 +211,10 @@ const styles = StyleSheet.create({
     },
     buttonText:{
       color: "white",
+    },
+    text:{
+      color: "#252525",
+      fontSize:20,
     },
   });
   

@@ -15,6 +15,7 @@ function HomePage({navigation}) {
   const [newPostData, setNewPostData] = useState("");
   const [refresh, setRefresh] = useState(true);
   const [dataArray,setDataArray]=useState([]);
+  const [photo,setPhoto]=useState(null);
  
 
   useEffect(()=>{
@@ -34,11 +35,12 @@ function HomePage({navigation}) {
     return (
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
+          <Image source={photo} style={{width: 100,height: 100}}></Image>
           <Text style={{fontSize:40, color: '#252525'}}>{firstName} {secondName}</Text>
         </View>
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} textAlign='center' placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();getPostData();}}>
+          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();}}>
             <Text style={styles.buttonText}>Submit Post</Text> 
           </TouchableOpacity>
         </View>
@@ -63,11 +65,12 @@ function HomePage({navigation}) {
     return(
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
-          <Text style={{fontSize:40, color: '#252525'}}>My Wall</Text>
+          <Image source={photo} style={{width: 100,height: 100}}></Image>
+          <Text style={{fontSize:40, color: '#252525'}}>{firstName} {secondName}</Text>
         </View>
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} textAlign='center' placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();getPostData();}}>
+          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();}}>
             <Text style={styles.buttonText}>Submit Post</Text> 
           </TouchableOpacity>
         </View>
@@ -89,9 +92,6 @@ function HomePage({navigation}) {
 
 
   function getButtons(item){
-    //const id = await AsyncStorage.getItem('id');
-    console.log(item.userID);
-    console.log("yeeeeet"+ID);
     if(item.userID == parseInt(ID)){
       return(
         <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => {editPost(item.key)}}>
@@ -108,18 +108,17 @@ function HomePage({navigation}) {
     }
   }
 
-  function editPost(key){
-    console.log("edit"+key);
+  function editPost(postID){
+    navigation.navigate('Post', {postID,ID});
   }
 
   function likePost(item){
     console.log("like");
   }
 
+  
+  
   async function getUserData(){
-    //const token = await AsyncStorage.getItem('token');
-    //const id = await AsyncStorage.getItem('id');
-
     const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ID,{
       method: 'GET',
       headers: {
@@ -133,15 +132,25 @@ function HomePage({navigation}) {
       
     }
     else{
-      console.log(response);
+      setFirstName("Error");
+      setSecondName("Error");
+    }
+    const imageResponse = await fetch("http://localhost:3333/api/1.0.0/user/"+ID+"/photo",{
+      method: 'GET',
+      headers:{
+        'X-Authorization': token
+      },
+    });
+    if(imageResponse.status == 200)
+    {
+      const body = await imageResponse.blob();
+      setPhoto(URL.createObjectURL(body));
     }
   }
 
  
+
   async function getPostData(){
-    //const token = await AsyncStorage.getItem('token');
-    //const id = await AsyncStorage.getItem('id');
-    console.log("IDDDDDDDD: "+ID);
     const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ ID+"/post",{
       method: 'GET',
       headers: {
@@ -177,9 +186,6 @@ function HomePage({navigation}) {
 
 
   async function sendNewPostData(){
-    //const token = await AsyncStorage.getItem('token');
-    //const id = await AsyncStorage.getItem('id');
-
     const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ ID+"/post",{
       method: 'POST',
       headers: {
@@ -190,10 +196,8 @@ function HomePage({navigation}) {
         text: newPostData,
       })
     });
-    console.log("postdata");
-    return response;
+    getPostData();
   }
-
 }
 
 
@@ -248,7 +252,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   Title:{
-    flex:2,
+    paddingTop:5,
+    flexDirection: 'row',
+    flex:3,
+    alignItems:'center',
   },
   touchableOpacity:{
     width: 130,

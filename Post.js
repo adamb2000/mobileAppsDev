@@ -12,7 +12,7 @@ function Post({route,navigation}) {
   const [newPostData, setNewPostData] = useState("");
   const [dataArray,setDataArray]=useState([]);
   const postID = route.params.postID;
-  const userID = route.params.ID;
+  const userID = route.params.UserID;
 
   useEffect(()=>{
     AsyncStorage.getItem('token').then((value)=>setToken(value));
@@ -40,10 +40,10 @@ function Post({route,navigation}) {
           <Text style={styles.detailsTitle}>Content:</Text>
         </View>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {}}>
+          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {updatePost();}}>
             <Text style={styles.buttonText}>Update Post</Text> 
           </TouchableOpacity>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {}}>
+          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {deletePost();}}>
             <Text style={styles.buttonText}>Delete Post</Text> 
           </TouchableOpacity>
         </View>
@@ -91,23 +91,48 @@ function Post({route,navigation}) {
   }
 
 
-  async function sendNewPostData(callback){
-    const token = await AsyncStorage.getItem('token');
-    const id = await AsyncStorage.getItem('id');
-
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+id+"/post",{
-      method: 'POST',
+  async function updatePost(){
+    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+userID+"/post/"+postID,{
+      method: 'PATCH',
       headers: {
         'content-type': 'application/json',
         'X-Authorization': token,
       },
       body: JSON.stringify({
+        post_id: postID,
         text: newPostData,
+        timestamp: dataArray.time,
+        author:{
+          userID:userID,
+          first_name:dataArray.fName,
+          last_name:dataArray.sName,
+          email:dataArray.email,
+        },
+        numlikes:dataArray.likes,
       })
     });
-    console.log("postdata");
-    return response;
+    console.log(response.status);
   }
+
+
+
+
+  async function deletePost(){
+    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+userID+"/post/"+postID,{
+      method: 'DELETE',
+      headers:{
+        'X-Authorization': token,
+      }
+    });
+    console.log(response.status);
+    if(response.status==200){
+      navigation.goBack()
+    }
+  }
+
+
+
+
 
 }
 

@@ -127,12 +127,21 @@ function HomePage({route, navigation}) {
     }
   }
 
-  function editPost(key){
-    console.log("edit"+key);
+  function editPost(postID){
+    console.log(UserID);
+    navigation.navigate('Post', {postID,UserID});
   }
 
-  function likePost(item){
-    console.log("like");
+  async function likePost(postID){
+    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+UserID+"/post/"+postID+"/like",{
+      method: 'POST',
+      headers: {
+        'X-Authorization': token
+      },
+    });
+    if(response.status==200){
+      getPostData();
+    }
   }
 
   async function getUserData(){

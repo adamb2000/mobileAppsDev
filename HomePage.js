@@ -109,11 +109,20 @@ function HomePage({navigation}) {
   }
 
   function editPost(postID){
-    navigation.navigate('Post', {postID,ID});
+    let UserID = ID;
+    navigation.navigate('Post', {postID,UserID});
   }
 
-  function likePost(item){
-    console.log("like");
+  async function likePost(postID){
+    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ID+"/post/"+postID+"/like",{
+      method: 'POST',
+      headers: {
+        'X-Authorization': token
+      },
+    });
+    if(response.status==200){
+      getPostData();
+    }
   }
 
   

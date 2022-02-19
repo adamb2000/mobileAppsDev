@@ -21,7 +21,10 @@ function Account({navigation}) {
   const [token,setToken] = useState("");
   const [ID,setID] = useState("");
 
-
+  const [input1, setInput1] = useState("");
+  const [input2, setInput2] = useState("");
+  const [input3, setInput3] = useState("");
+  const [input4, setInput4] = useState("");
   
   useEffect(()=>{
     AsyncStorage.getItem('id').then((value)=>setID(value));
@@ -31,6 +34,10 @@ function Account({navigation}) {
   useEffect(() => { 
     if(token != ""){
       getData();
+      const Subscription = navigation.addListener('focus', () => {
+        setStatus(1);
+      });
+      return Subscription;
     }
  },[token]);
 
@@ -45,8 +52,8 @@ function Account({navigation}) {
           </View>
           <View style={styles.imageContainer}>
             <Image source={photo} style={{width: 100,height: 100}}></Image>
-            <TouchableOpacity style={styles.touchableOpacity} onPress={takePhoto}>
-              <Text style={styles.buttonText}>TakePhoto</Text> 
+            <TouchableOpacity style={styles.touchableOpacity} onPress={() => {navigation.navigate('TakePhoto')}}>
+              <Text style={styles.buttonText}>Take New Photo</Text> 
             </TouchableOpacity>
           </View>
           <View style={styles.innerContainer}>
@@ -55,10 +62,10 @@ function Account({navigation}) {
             <Text style={styles.text}>Second Name: {secondName}</Text>
             <Text style={styles.text}>Email Address: {email}</Text>
             <View style={styles.inputContainer}>
-              <TextInput style={styles.input} placeholder="First Name" onChangeText={(value) => setNewFirstName(value)}/>
-              <TextInput style={styles.input} placeholder="Second Name" onChangeText={(value) => setNewSecondName(value)}/>
-              <TextInput style={styles.input} placeholder="Email" onChangeText={(value) => setNewEmail(value)}/>
-              <TextInput style={styles.input} placeholder="Password" onChangeText={(value) => setNewPassword(value)}/>
+              <TextInput style={styles.input} ref = {ref => {setInput1(ref);}} placeholder="First Name" onChangeText={(value) => setNewFirstName(value)}/>
+              <TextInput style={styles.input} ref = {ref => {setInput2(ref);}} placeholder="Second Name" onChangeText={(value) => setNewSecondName(value)}/>
+              <TextInput style={styles.input} ref = {ref => {setInput3(ref);}} placeholder="Email" onChangeText={(value) => setNewEmail(value)}/>
+              <TextInput style={styles.input} ref = {ref => {setInput4(ref);}} placeholder="Password" onChangeText={(value) => setNewPassword(value)}/>
             </View>
             <TouchableOpacity style={styles.touchableOpacity} onPress={updateUserInfo}>
               <Text style={styles.buttonText}>Submit New Details</Text> 
@@ -78,12 +85,6 @@ function Account({navigation}) {
 
 
 
-  function takePhoto(){
-    console.log("phoho");
-  }
-
-
-
   async function updateUserInfo(){
     const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ID,{
         method: 'PATCH',
@@ -98,23 +99,35 @@ function Account({navigation}) {
             password: newPassword,
         })
     });
-    if(response.status != 200){
+    if(response.status == 200){
       setStatus(3);
+      input1.clear();
+      input2.clear();
+      input3.clear();
+      input4.clear();
+    }
+    else if(response.status == 400){
+      setStatus(2);
     }
     else{
-      setStatus(2);
+      setStatus(4);
     }
     
   }
 
 
   function warning(){
-    if(status == 2){
+    if(status == 3){
       return(
         <Text>Success</Text>
       )
     }
-    else if(status ==3){
+    else if(status == 2){
+      return (
+        <Text>Bad Request, please fill out all boxed with valid info</Text>
+      )
+    }
+    else if(status == 4){
       return (
         <Text>Error</Text>
       )

@@ -21,6 +21,11 @@ function Search({navigation}) {
     if(token != ""){
       getRequests();
       getFriends();
+      const Subscription = navigation.addListener('focus', () => {
+        getRequests();
+        getFriends();
+      });
+      return Subscription;
     }
  },[token]);
 
@@ -102,7 +107,7 @@ function Search({navigation}) {
     navigation.navigate('User', {userID});
   }
 
-
+  
 
   async function getFriends(){
     const response = await fetch("http://localhost:3333/api/1.0.0/search?search_in=friends&limit=20&offset=0&q="+search,{
@@ -149,7 +154,7 @@ const styles = StyleSheet.create({
     innerContainer:{
       alignItems: 'center',
       justifyContent: 'center',
-      flex:8,
+      flex:10,
       minWidth: '100%',
     },
     Title:{
@@ -184,6 +189,7 @@ const styles = StyleSheet.create({
     inputContainer:{
       alignItems: 'center',
       justifyContent: 'center',
+      flex:1,
     },
     input:{
       width:300,

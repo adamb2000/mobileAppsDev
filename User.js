@@ -10,14 +10,14 @@ function HomePage({route, navigation}) {
   const [ID,setID] = useState("");
   const [firstName, setFirstName] = useState("");
   const [secondName, setSecondName] = useState("");
-  const [loaded, setLoaded] = useState(1);
   const [newPostData, setNewPostData] = useState("");
-  const [refresh, setRefresh] = useState(true);
   const [dataArray,setDataArray]=useState([]);
   const [photo,setPhoto]=useState(null);
-  const UserID = route.params.userID;
-  
 
+  const [refresh, setRefresh] = useState(true);
+  const [loaded, setLoaded] = useState(1);
+  const UserID = route.params.userID;
+  const [input1, setInput1] = useState("");
 
 
   useEffect(()=>{
@@ -29,6 +29,10 @@ function HomePage({route, navigation}) {
     if(token != ""){
       getPostData();
       getUserData();
+      const Subscription = navigation.addListener('focus', () => {
+        getPostData()
+      });
+      return Subscription;
     }
  },[token]);
 
@@ -40,11 +44,11 @@ function HomePage({route, navigation}) {
     return (
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
-          <Image source={photo} style={{width: 100,height: 100}}></Image>
-          <Text style={{fontSize:40, color: '#252525'}}>{firstName} {secondName}</Text>
+          <Image source={photo} style={styles.image}></Image>
+          <Text style={styles.titleText}>{firstName} {secondName}</Text>
         </View>
         <View style={styles.inputContainer}>
-          <TextInput style={styles.input} textAlign='center' placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
+          <TextInput style={styles.input} ref = {ref => {setInput1(ref);}} multiline placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
           <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();}}>
             <Text style={styles.buttonText}>Submit Post</Text> 
           </TouchableOpacity>
@@ -70,11 +74,11 @@ function HomePage({route, navigation}) {
     return(
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
-          <Image source={photo} style={{width: 100,height: 100}}></Image>
-          <Text style={{fontSize:40, color: '#252525'}}>{firstName} {secondName}</Text>
+          <Image source={photo} style={styles.image}></Image>
+          <Text style={styles.titleText}>{firstName} {secondName}</Text>
         </View>
         <View style={styles.inputContainer}>
-          <TextInput style={styles.input} textAlign='center' placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
+          <TextInput style={styles.input} ref = {ref => {setInput1(ref);}} multiline placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
           <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();}}>
             <Text style={styles.buttonText}>Submit Post</Text> 
           </TouchableOpacity>
@@ -89,7 +93,7 @@ function HomePage({route, navigation}) {
     return(
         <View style={styles.outerContainer}>
           <View style={styles.Title}>
-            <Text style={{fontSize:40, color: '#252525'}}>{firstName} {secondName}</Text>
+            <Text style={styles.titleText}>{firstName} {secondName}</Text>
           </View>
           <View style={styles.innerContainer}>
             <View><Text>You are not friends with {firstName} {secondName}</Text></View>
@@ -245,7 +249,10 @@ function HomePage({route, navigation}) {
         text: newPostData,
       })
     });
-    getPostData();
+    if(response.status == 201){
+      input1.clear();
+      getPostData();
+    } 
   }
 }
 
@@ -263,23 +270,25 @@ const styles = StyleSheet.create({
   inputContainer:{
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 3
+    flex: 3,
+    width:'100%',
   },
   input:{
-    width:300,
-    height:40,
+    height:80,
     alignItems:'center',
     border: 'solid',
-    borderRadius: 100,
+    borderRadius: 10,
     marginBottom: 5,
     backgroundColor: 'white',
     textAlign: 'center',
+    width:'100%',
   },
   innerContainer:{
     alignItems: 'center',
     justifyContent: 'center',
     flex:15,
     minWidth: '100%',
+    marginTop:10,
   },
   listView:{
     borderWidth: 3,
@@ -305,6 +314,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex:3,
     alignItems:'center',
+    marginBottom: 10,
+  },
+  titleText:{
+    fontSize:40, 
+    color: '#252525',
   },
   touchableOpacity:{
     width: 130,
@@ -332,6 +346,13 @@ const styles = StyleSheet.create({
   flatList:{
     minWidth: '100%',
     flex:1,
+  },
+  image:{
+    width: 100,
+    height: 100,
+    border: 'solid',
+    borderRadius:10,
+    borderWidth: 3,
   },
 });
 

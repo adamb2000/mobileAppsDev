@@ -1,289 +1,282 @@
-import React , { useEffect, useState } from 'react';
-import {StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity,Image } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react'
+import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Image } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const image = require('./spacebook.jpg');
+function HomePage ({ navigation }) {
+  const [token, setToken] = useState('')
+  const [ID, setID] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [secondName, setSecondName] = useState('')
+  const [newPostData, setNewPostData] = useState('')
+  const [dataArray, setDataArray] = useState([])
+  const [photo, setPhoto] = useState(null)
 
+  const [refresh, setRefresh] = useState(true)
+  const [loaded, setLoaded] = useState(1)
+  const [input1, setInput1] = useState('')
 
-
-function HomePage({navigation}) {
-  const [token,setToken] = useState("");
-  const [ID,setID] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [secondName, setSecondName] = useState("");
-  const [newPostData, setNewPostData] = useState("");
-  const [dataArray,setDataArray]=useState([]);
-  const [photo,setPhoto]=useState(null);
-
-  const [refresh, setRefresh] = useState(true);
-  const [loaded, setLoaded] = useState(1);
-  const [input1, setInput1] = useState("");
-
-  useEffect(()=>{
-    AsyncStorage.getItem('id').then((value)=>setID(value));
-    AsyncStorage.getItem('token').then((value)=>setToken(value));
-    
-  },[]);
-
-  useEffect(() => { 
-    if(token != ""){
-      getPostData();
-      getUserData();
+  useEffect(() => {
+    if (token !== '') {
+      getPostData()
+      getUserData()
       const Subscription = navigation.addListener('focus', () => {
-        getPostData();
-        getUserData();
-      });
-      return Subscription;
+        getPostData()
+        getUserData()
+      })
+      return Subscription
     }
- },[token]);
+    else{
+      AsyncStorage.getItem('id').then((value) => setID(value))
+      AsyncStorage.getItem('token').then((value) => setToken(value))
+    }
+  }, [token])
 
-  
-  if(loaded ==3){
+  if (loaded === 3) {
     return (
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
-          <Image source={photo} style={styles.image}></Image>
-          <Text style={styles.titleText}>{firstName} {secondName}</Text>
+          <Image source={photo} style={styles.image} />
+          <View style={styles.titleTextView}>
+            <Text style={styles.titleText}>{firstName} {secondName}</Text>
+          </View>
         </View>
         <View style={styles.inputContainer}>
-          <TextInput style={styles.input} ref = {ref => {setInput1(ref);}} multiline placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();}}>
-            <Text style={styles.buttonText}>Submit Post</Text> 
-          </TouchableOpacity>
+          <TextInput style={styles.input} ref={ref => { setInput1(ref) }} multiline placeholder='Post' onChangeText={(value) => setNewPostData(value)} />
+          <View style={styles.buttonView}>
+            <TouchableOpacity style={styles.touchableOpacity} onPress={() => { sendNewPostData() }}>
+              <Text style={styles.buttonText}>Submit Post</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.touchableOpacity} onPress={() => { navigateDraft(ID) }}>
+              <Text style={styles.buttonText}>Drafts</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.innerContainer}>
-          <FlatList style={styles.flatList}          
-            data={dataArray} extraData={refresh} 
-            renderItem={({item}) => 
-            <View style={styles.listView}>
-              <Text style={styles.listTextName}>{item.fName} {item.sName} at {item.time}</Text>
-              <Text style={styles.listText}>{item.text}</Text>
-              <View style={styles.listButtonView}>
-                <Text>Likes: {item.likes}</Text>
-                {getButtons(item)}
-              </View>
-            </View>
-          }/>
-        </View>
-      </View>
-    );
-  }
-  else if(loaded ==2){
-    return(
-      <View style={styles.outerContainer}>
-        <View style={styles.Title}>
-          <Image source={photo} style={styles.image}></Image>
-          <Text style={styles.titleText}>{firstName} {secondName}</Text>
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput style={styles.input} ref = {ref => {setInput1(ref);}} mulitline placeholder="Post" onChangeText={(value) => setNewPostData(value)}/>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {sendNewPostData();}}>
-            <Text style={styles.buttonText}>Submit Post</Text> 
-          </TouchableOpacity>
-        </View>
-        <View style={styles.innerContainer}>
-          <Text style={{fontSize:10}}>No Posts Yet!</Text>
+          <FlatList
+            style={styles.flatList}
+            data={dataArray} extraData={refresh}
+            renderItem={({ item }) =>
+              <View style={styles.listView}>
+                <Text style={styles.listTextName}>{item.fName} {item.sName} at {item.time}</Text>
+                <Text style={styles.listText}>{item.text}</Text>
+                <View style={styles.listButtonView}>
+                  <Text>Likes: {item.likes}</Text>
+                  {getButtons(item)}
+                </View>
+              </View>}
+          />
         </View>
       </View>
     )
-  }
-  else{
-    return(
+  } else if (loaded === 2) {
+    return (
+      <View style={styles.outerContainer}>
+        <View style={styles.Title}>
+          <Image source={photo} style={styles.image} />
+          <Text style={styles.titleText}>{firstName} {secondName}</Text>
+        </View>
+        <View style={styles.inputContainer}>
+          <TextInput style={styles.input} ref={ref => { setInput1(ref) }} mulitline placeholder='Post' onChangeText={(value) => setNewPostData(value)} />
+          <View style={styles.buttonView}>
+            <TouchableOpacity style={styles.touchableOpacity} onPress={() => { sendNewPostData() }}>
+              <Text style={styles.buttonText}>Submit Post</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.touchableOpacity} onPress={() => { navigateDraft(ID) }}>
+              <Text style={styles.buttonText}>Drafts</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.innerContainer}>
+          <Text style={{ fontSize: 10 }}>No Posts Yet!</Text>
+        </View>
+      </View>
+    )
+  } else {
+    return (
       <View><Text>Loading</Text></View>
     )
   }
 
+  function navigateDraft(UserID){
+    navigation.navigate('Drafts', {firstName,secondName,UserID,newPostData})
+  }
 
 
-
-
-
-  function getButtons(item){
-    if(item.userID == parseInt(ID)){
-      return(
-        <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => {editPost(item.key)}}>
+  function getButtons (item) {
+    if (item.userID === parseInt(ID)) {
+      return (
+        <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { editPost(item.key) }}>
           <Text style={styles.buttonText}>Edit</Text>
         </TouchableOpacity>
       )
-    }
-    else{
-      return(
-        <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => {likePost(item.key)}}>
+    } else {
+      return (
+        <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { likePost(item.key) }}>
           <Text style={styles.buttonText}>Like</Text>
         </TouchableOpacity>
       )
     }
   }
 
-  function editPost(postID){
-    let UserID = ID;
-    navigation.navigate('Post', {postID,UserID});
+  function editPost (postID) {
+    const UserID = ID
+    navigation.navigate('Post', { postID, UserID })
   }
 
-  async function likePost(postID){
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ID+"/post/"+postID+"/like",{
+  async function likePost (postID) {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post/' + postID + '/like', {
       method: 'POST',
       headers: {
         'X-Authorization': token
-      },
-    });
-    if(response.status==200){
-      getPostData();
+      }
+    })
+    if (response.status === 200) {
+      getPostData()
     }
   }
 
-  
-  
-  async function getUserData(){
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ID,{
+  async function getUserData () {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID, {
       method: 'GET',
       headers: {
         'X-Authorization': token
-      },
-    });
-    if(response.status==200){
-      const body = await response.json();
-      setFirstName(body.first_name);
-      setSecondName(body.last_name);
-      
+      }
+    })
+    if (response.status === 200) {
+      const body = await response.json()
+      setFirstName(body.first_name)
+      setSecondName(body.last_name)
+    } else {
+      setFirstName('Error')
+      setSecondName('Error')
     }
-    else{
-      setFirstName("Error");
-      setSecondName("Error");
-    }
-    const imageResponse = await fetch("http://localhost:3333/api/1.0.0/user/"+ID+"/photo",{
+    const imageResponse = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', {
       method: 'GET',
-      headers:{
+      headers: {
         'X-Authorization': token
-      },
-    });
-    if(imageResponse.status == 200)
-    {
-      const body = await imageResponse.blob();
-      setPhoto(URL.createObjectURL(body));
+      }
+    })
+    if (imageResponse.status === 200) {
+      const body = await imageResponse.blob()
+      setPhoto(URL.createObjectURL(body))
     }
   }
 
- 
-
-  async function getPostData(){
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ ID+"/post",{
+  async function getPostData () {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post', {
       method: 'GET',
       headers: {
-        'X-Authorization':  token
-      },
-    });
-    if(response.status ==200){
-      const body = await response.json();
-      if(body.length>0){
-        setDataArray([]);
-        for(let i=0;i<body.length;i++){
-          let key = body[i].post_id;
-          let text = body[i].text;
-          let time = body[i].timestamp;
-          let likes = body[i].numLikes;
-          let fName = body[i].author.first_name;
-          let sName = body[i].author.last_name;
-          let userID = body[i].author.user_id; 
-          setDataArray(old => [...old,{key,text,time,likes,fName,sName,userID}]);
+        'X-Authorization': token
+      }
+    })
+    if (response.status === 200) {
+      const body = await response.json()
+      if (body.length > 0) {
+        setDataArray([])
+        for (let i = 0; i < body.length; i++) {
+          const key = body[i].post_id
+          const text = body[i].text;
+          var time = new Date(body[i].timestamp)
+          time = time.toLocaleString();
+          const likes = body[i].numLikes
+          const fName = body[i].author.first_name
+          const sName = body[i].author.last_name
+          const userID = body[i].author.user_id
+          setDataArray(old => [...old, { key, text, time, likes, fName, sName, userID }])
         }
         setLoaded(3)
+      } else {
+        setLoaded(2)
       }
-      else{
-        setLoaded(2) 
-      }
+    } else {
+      setLoaded(1)
     }
-    else{
-        setLoaded(1); 
-    }
-    setRefresh(!refresh);
+    setRefresh(!refresh)
   }
 
-
-
-  async function sendNewPostData(){
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+ ID+"/post",{
+  async function sendNewPostData () {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post', {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'X-Authorization':  token,
+        'X-Authorization': token
       },
       body: JSON.stringify({
-        text: newPostData,
+        text: newPostData
       })
-    });
-    if(response.status == 201){
-      input1.clear();
-      getPostData();
-    } 
+    })
+    if (response.status === 201) {
+      input1.clear()
+      getPostData()
+    }
   }
 }
-
-
 
 const styles = StyleSheet.create({
   outerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex:1,
-    backgroundColor:'white',
-    marginLeft:3,
-    marginRight:3,
+    flex: 1,
+    backgroundColor: 'white',
+    marginLeft: 3,
+    marginRight: 3
   },
-  inputContainer:{
+  inputContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     flex: 3,
-    width:'100%',
+    width: '100%'
   },
-  input:{
-    height:80,
-    alignItems:'center',
+  input: {
+    height: 80,
+    alignItems: 'center',
     border: 'solid',
     borderRadius: 10,
     marginBottom: 5,
     backgroundColor: 'white',
     textAlign: 'center',
-    width:'100%',
+    width: '100%'
   },
-  innerContainer:{
-    marginTop:10,
+  innerContainer: {
+    marginTop: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    flex:15,
-    minWidth: '100%',
+    flex: 15,
+    minWidth: '100%'
   },
-  listView:{
+  listView: {
     borderWidth: 3,
     borderRadius: 10,
     marginBottom: 3,
     padding: 5,
-    minWidth: '100%',
+    minWidth: '100%'
   },
-  listTextName:{
-    fontSize:10,
+  listTextName: {
+    fontSize: 10
   },
-  listText:{
-    fontSize:20,
+  listText: {
+    fontSize: 15,
+    fontWeight: 'bold',
   },
-  listButtonView:{
-    alignItems: "center", 
-    marginTop:5,
+  listButtonView: {
+    alignItems: 'center',
+    marginTop: 5,
     flex: 1,
     flexDirection: 'row'
   },
-  Title:{
-    paddingTop:5,
+  Title: {
+    paddingTop: 5,
     flexDirection: 'row',
-    flex:3,
-    alignItems:'center',
+    flex: 3,
     marginBottom: 10,
+    width:'100%',
+    minHeight:100,
   },
-  titleText:{
-    fontSize:40, 
-    color: '#252525',
+  titleText: {
+    fontSize: 40,
+    color: '#252525'
   },
-  touchableOpacity:{
+  touchableOpacity: {
     width: 130,
     height: 20,
     marginTop: 5,
@@ -291,32 +284,41 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: "#252525",
+    backgroundColor: '#252525'
   },
-  listTouchableOpacity:{
+  listTouchableOpacity: {
     width: 40,
     height: 20,
-    marginLeft:5,
+    marginLeft: 5,
     border: 'solid',
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: "#252525",
+    backgroundColor: '#252525'
   },
-  buttonText:{
-    color: "white",
+  buttonText: {
+    color: 'white'
   },
-  flatList:{
+  buttonView: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  flatList: {
     minWidth: '100%',
-    flex:1,
+    flex: 1
   },
-  image:{
+  titleTextView: {
+    flex:1,
+    alignItems: 'center',
+    justifyContent:'center',
+  },
+  image: {
     width: 100,
     height: 100,
     border: 'solid',
-    borderRadius:10,
-    borderWidth: 3,
-  },
-});
+    borderRadius: 10,
+    borderWidth: 3
+  }
+})
 
-export default HomePage;
+export default HomePage

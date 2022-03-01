@@ -15,6 +15,8 @@ function HomePage({ route, navigation }) {
   const [loaded, setLoaded] = useState(1)
   const [UserID, setUserID] = useState(route.params.userID)
   const [input1, setInput1] = useState('')
+  const [status,setStatus] = useState(0)
+  const [placeholder, setPlaceholder] = useState("Post")
 
   useEffect(() => {
     if (token !== '') {
@@ -59,7 +61,7 @@ function HomePage({ route, navigation }) {
           </View>
         </View>
         <View style={styles.inputContainer}>
-          <TextInput style={styles.input} ref={ref => { setInput1(ref) }} multiline placeholder='Post' onChangeText={(value) => setNewPostData(value)} />
+          <TextInput style={styles.input} ref={ref => { setInput1(ref) }} multiline placeholder={placeholder} onChangeText={(value) => setNewPostData(value)} />
           <View style={styles.buttonView}>
             <TouchableOpacity style={styles.touchableOpacity} onPress={() => { sendNewPostData() }}>
               <Text style={styles.buttonText}>Submit Post</Text>
@@ -99,7 +101,7 @@ function HomePage({ route, navigation }) {
           </View>
         </View>
         <View style={styles.inputContainer}>
-          <TextInput style={styles.input} ref={ref => { setInput1(ref) }} multiline placeholder='Post' onChangeText={(value) => setNewPostData(value)} />
+          <TextInput style={styles.input} ref={ref => { setInput1(ref) }} multiline placeholder={placeholder} onChangeText={(value) => setNewPostData(value)} />
           <View style={styles.buttonView}>
             <TouchableOpacity style={styles.touchableOpacity} onPress={() => { sendNewPostData() }}>
               <Text style={styles.buttonText}>Submit Post</Text>
@@ -131,6 +133,7 @@ function HomePage({ route, navigation }) {
             </TouchableOpacity>
           </View>
           <Text> To add them</Text>
+          {warning()}
         </View>
       </View>
     )
@@ -183,9 +186,16 @@ function HomePage({ route, navigation }) {
       const body = await response.json()
       setFirstName(body.first_name)
       setSecondName(body.last_name)
-    } else {
-      setFirstName('Error')
-      setSecondName('Error')
+    } else if (response.status === 401) {
+      AsyncStorage.removeItem('token')
+      AsyncStorage.removeItem('id')
+      navigation.navigate('Login')
+    } else if (response.status === 404) {
+      setLoaded(1)
+      setError("Error - User Not Found")
+    } else if (response.status === 500) {
+      setLoaded(1)
+      setError("Server Error")
     }
     const imageResponse = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID + '/photo', {
       method: 'GET',
@@ -206,8 +216,12 @@ function HomePage({ route, navigation }) {
         'X-Authorization': token
       }
     })
-    if (response.status === 200) {
-      navigation.navigate('User', { UserID })
+    if (response.status === 201) {
+      setStatus(1)
+    } else if(response.status === 403){
+      setStatus(2)
+    } else if(response.status === 404 || response.status === 500){
+      setStatus(3)
     }
   }
 
@@ -239,6 +253,13 @@ function HomePage({ route, navigation }) {
       }
     } else if (response.status === 403) {
       setLoaded(4)
+    } else if (response.status === 401) {
+      AsyncStorage.removeItem('token')
+      AsyncStorage.removeItem('id')
+      navigation.navigate('Login')
+    } else if(response.status === 500){
+      setLoaded(1)
+      setError("Server Error ")
     } else {
       setLoaded(1)
     }
@@ -246,21 +267,56 @@ function HomePage({ route, navigation }) {
   }
 
   async function sendNewPostData() {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID + '/post', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'X-Authorization': token
-      },
-      body: JSON.stringify({
-        text: newPostData
+    if(newPostData !== ''){
+      const response = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID + '/post', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'X-Authorization': token
+        },
+        body: JSON.stringify({
+          text: newPostData
+        })
       })
-    })
-    if (response.status === 201) {
-      input1.clear()
-      getPostData()
+      if (response.status === 201) {
+        input1.clear()
+        setNewPostData("")
+        setPlaceholder("Post")
+        getPostData()
+      }
+    } else {
+      setPlaceholder("Cannot Submit Empty Post")
     }
   }
+
+
+
+
+
+  function warning () {
+    if (status === 1) {
+      return (
+        <View>
+          <Text style={{ fontSize: 20, color: '#252525' }}>Request Submitted!</Text>
+        </View>
+      )
+    } else if(status === 2){
+      return (
+        <View>
+          <Text style={{ fontSize: 20, color: '#252525' }}>Request Already Submitted!</Text>
+        </View>
+      )
+    } else if(status === 3){
+      return (
+        <View>
+          <Text style={{ fontSize: 20, color: '#252525' }}>Server Error, please try again</Text>
+        </View>
+      )
+    }
+  }
+
+
+
 }
 
 const styles = StyleSheet.create({

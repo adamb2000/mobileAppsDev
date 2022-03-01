@@ -26,6 +26,7 @@ const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
 const Drawer = createDrawerNavigator()
 
+
 function App () {
   return (
     <NavigationContainer>

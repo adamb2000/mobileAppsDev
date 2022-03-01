@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Image } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-function HomePage ({ navigation }) {
+function HomePage({ navigation }) {
   const [token, setToken] = useState('')
   const [ID, setID] = useState('')
   const [firstName, setFirstName] = useState('')
@@ -10,22 +10,21 @@ function HomePage ({ navigation }) {
   const [newPostData, setNewPostData] = useState('')
   const [dataArray, setDataArray] = useState([])
   const [photo, setPhoto] = useState(null)
-
+  const [error, setError] = useState("")
   const [refresh, setRefresh] = useState(true)
   const [loaded, setLoaded] = useState(1)
   const [input1, setInput1] = useState('')
+  const [placeholder, setPlaceholder] = useState("Post")
 
   useEffect(() => {
     if (token !== '') {
-      getPostData()
       getUserData()
       const Subscription = navigation.addListener('focus', () => {
-        getPostData()
         getUserData()
       })
       return Subscription
     }
-    else{
+    else {
       AsyncStorage.getItem('id').then((value) => setID(value))
       AsyncStorage.getItem('token').then((value) => setToken(value))
     }
@@ -41,7 +40,7 @@ function HomePage ({ navigation }) {
           </View>
         </View>
         <View style={styles.inputContainer}>
-          <TextInput style={styles.input} ref={ref => { setInput1(ref) }} multiline placeholder='Post' onChangeText={(value) => setNewPostData(value)} />
+          <TextInput style={styles.input} ref={ref => { setInput1(ref) }} multiline placeholder={placeholder} onChangeText={(value) => setNewPostData(value)} />
           <View style={styles.buttonView}>
             <TouchableOpacity style={styles.touchableOpacity} onPress={() => { sendNewPostData() }}>
               <Text style={styles.buttonText}>Submit Post</Text>
@@ -73,10 +72,12 @@ function HomePage ({ navigation }) {
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
           <Image source={photo} style={styles.image} />
-          <Text style={styles.titleText}>{firstName} {secondName}</Text>
+          <View style={styles.titleTextView}>
+            <Text style={styles.titleText}>{firstName} {secondName}</Text>
+          </View>
         </View>
         <View style={styles.inputContainer}>
-          <TextInput style={styles.input} ref={ref => { setInput1(ref) }} mulitline placeholder='Post' onChangeText={(value) => setNewPostData(value)} />
+          <TextInput style={styles.input} ref={ref => { setInput1(ref) }} mulitline placeholder={placeholder} onChangeText={(value) => setNewPostData(value)} />
           <View style={styles.buttonView}>
             <TouchableOpacity style={styles.touchableOpacity} onPress={() => { sendNewPostData() }}>
               <Text style={styles.buttonText}>Submit Post</Text>
@@ -93,16 +94,19 @@ function HomePage ({ navigation }) {
     )
   } else {
     return (
-      <View><Text>Loading</Text></View>
+      <View>
+        <View><Text>Loading</Text></View>
+        <View><Text>{error}</Text></View>
+      </View>
     )
   }
 
-  function navigateDraft(UserID){
-    navigation.navigate('Drafts', {firstName,secondName,UserID,newPostData})
+  function navigateDraft(UserID) {
+    navigation.navigate('Drafts', { firstName, secondName, UserID, newPostData })
   }
 
 
-  function getButtons (item) {
+  function getButtons(item) {
     if (item.userID === parseInt(ID)) {
       return (
         <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { editPost(item.key) }}>
@@ -118,12 +122,12 @@ function HomePage ({ navigation }) {
     }
   }
 
-  function editPost (postID) {
+  function editPost(postID) {
     const UserID = ID
     navigation.navigate('Post', { postID, UserID })
   }
 
-  async function likePost (postID) {
+  async function likePost(postID) {
     const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post/' + postID + '/like', {
       method: 'POST',
       headers: {
@@ -135,7 +139,7 @@ function HomePage ({ navigation }) {
     }
   }
 
-  async function getUserData () {
+  async function getUserData() {
     const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID, {
       method: 'GET',
       headers: {
@@ -146,9 +150,16 @@ function HomePage ({ navigation }) {
       const body = await response.json()
       setFirstName(body.first_name)
       setSecondName(body.last_name)
-    } else {
-      setFirstName('Error')
-      setSecondName('Error')
+    } else if (response.status === 401) {
+      AsyncStorage.removeItem('token')
+      AsyncStorage.removeItem('id')
+      navigation.navigate('Login')
+    } else if (response.status === 404) {
+      setLoaded(1)
+      setError("Error - User Not Found")
+    } else if (response.status === 500) {
+      setLoaded(1)
+      setError("Server Error")
     }
     const imageResponse = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', {
       method: 'GET',
@@ -160,9 +171,10 @@ function HomePage ({ navigation }) {
       const body = await imageResponse.blob()
       setPhoto(URL.createObjectURL(body))
     }
+    getPostData()
   }
 
-  async function getPostData () {
+  async function getPostData() {
     const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post', {
       method: 'GET',
       headers: {
@@ -188,28 +200,44 @@ function HomePage ({ navigation }) {
       } else {
         setLoaded(2)
       }
-    } else {
+    } else if (response.status === 401) {
+      AsyncStorage.removeItem('token')
+      AsyncStorage.removeItem('id')
+      navigation.navigate('Login')
+    } else if(response.status === 500){
       setLoaded(1)
+      setError("Server Error ")
     }
     setRefresh(!refresh)
   }
 
-  async function sendNewPostData () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'X-Authorization': token
-      },
-      body: JSON.stringify({
-        text: newPostData
+  async function sendNewPostData() {
+    if (newPostData !== '') {
+      const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'X-Authorization': token
+        },
+        body: JSON.stringify({
+          text: newPostData
+        })
       })
-    })
-    if (response.status === 201) {
-      input1.clear()
-      getPostData()
+      if (response.status === 201) {
+        setPlaceholder("Post")
+        input1.clear()
+        setNewPostData('')
+        getPostData()
+      } else if (response.status === 500) {
+        setPlaceholder("Server Error")
+      }
+    } else {
+      setPlaceholder("Cannot Submit Empty Post")
     }
   }
+
+
+
 }
 
 const styles = StyleSheet.create({
@@ -269,12 +297,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flex: 3,
     marginBottom: 10,
-    width:'100%',
-    minHeight:100,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems:'center',
+    minHeight: 100,
   },
   titleText: {
     fontSize: 40,
-    color: '#252525'
+    color: '#252525',
+    alignContent:'center',
+    justifyContent:'center',
   },
   touchableOpacity: {
     width: 130,
@@ -300,7 +332,7 @@ const styles = StyleSheet.create({
     color: 'white'
   },
   buttonView: {
-    flex: 1,
+    flex: 2,
     flexDirection: 'row',
   },
   flatList: {
@@ -308,9 +340,9 @@ const styles = StyleSheet.create({
     flex: 1
   },
   titleTextView: {
-    flex:1,
+    flex: 1,
     alignItems: 'center',
-    justifyContent:'center',
+    justifyContent: 'center',
   },
   image: {
     width: 100,

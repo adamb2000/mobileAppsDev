@@ -1,215 +1,193 @@
-import React , { useEffect, useState } from 'react';
-import {StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react'
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ScrollView } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
-const image = require('./spacebook.jpg');
+function Post ({ route, navigation }) {
+  const [token, setToken] = useState('')
+  const [loaded, setLoaded] = useState(1)
+  const [newPostData, setNewPostData] = useState('')
+  const [dataArray, setDataArray] = useState([])
+  const postID = route.params.postID
+  const userID = route.params.UserID
 
-
-
-function Post({route,navigation}) {
-  const [token,setToken] = useState("");
-  const [loaded, setLoaded] = useState(1);
-  const [newPostData, setNewPostData] = useState("");
-  const [dataArray,setDataArray]=useState([]);
-  const postID = route.params.postID;
-  const userID = route.params.UserID;
-
-  useEffect(()=>{
-    AsyncStorage.getItem('token').then((value)=>setToken(value));
-  },[]);
-
-  useEffect(() => { 
-    if(token != ""){
-      getPostData();
+  useEffect(() => {
+    if (token !== '') {
+      getPostData()
     }
- },[token]);
+    else{
+      AsyncStorage.getItem('token').then((value) => setToken(value))
+    }
+  }, [token])
 
-
-  if(loaded ==3){
+  if (loaded === 3) {
     return (
-      <View style={styles.outerContainer}>
-        <View style={styles.innerContainer}>
-          <Text style={styles.detailsTitle}>Details:</Text>
-          <View style={styles.detailsContainer}>
-            <View style={styles.detailsView}><Text style={styles.detailsField}>First Name: </Text><Text style={styles.detailsText}>{dataArray.fName}</Text></View>
-            <View style={styles.detailsView}><Text style={styles.detailsField}>Second Name: </Text><Text style={styles.detailsText}>{dataArray.sName}</Text></View>
-            <View style={styles.detailsView}><Text style={styles.detailsField}>Email: </Text><Text style={styles.detailsText}>{dataArray.userEmail}</Text></View>
-            <View style={styles.detailsView}><Text style={styles.detailsField}>Time: </Text><Text style={styles.detailsText}>{dataArray.time}</Text></View>
-            <View style={styles.detailsView}><Text style={styles.detailsField}>Likes: </Text><Text style={styles.detailsText}>{dataArray.likes}</Text></View>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={styles.outerContainer}>
+          <View style={styles.detailsTitleView}>
+            <Text style={styles.detailsTitle}>Details:</Text>
           </View>
-          <Text style={styles.detailsTitle}>Content:</Text>
+          <View style={styles.innerContainer}>
+            <View style={styles.detailsContainer}>
+              <View style={styles.detailsView}><Text style={styles.detailsField}>First Name: </Text><Text style={styles.detailsText}>{dataArray.fName}</Text></View>
+              <View style={styles.detailsView}><Text style={styles.detailsField}>Second Name: </Text><Text style={styles.detailsText}>{dataArray.sName}</Text></View>
+              <View style={styles.detailsView}><Text style={styles.detailsField}>Email: </Text><Text style={styles.detailsText}>{dataArray.userEmail}</Text></View>
+              <View style={styles.detailsView}><Text style={styles.detailsField}>Time: </Text><Text style={styles.detailsText}>{dataArray.time}</Text></View>
+              <View style={styles.detailsView}><Text style={styles.detailsField}>Likes: </Text><Text style={styles.detailsText}>{dataArray.likes}</Text></View>
+            </View>
+          </View>
+          <View style={styles.detailsTitleView}>
+            <Text style={styles.detailsTitle}>Content:</Text>
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.touchableOpacity} onPress={() => { updatePost() }}>
+              <Text style={styles.buttonText}>Update Post</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.touchableOpacity} onPress={() => { deletePost() }}>
+              <Text style={styles.buttonText}>Delete Post</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput style={styles.input} multiline defaultValue={dataArray.text} onChangeText={(value) => setNewPostData(value)} />
+          </View>
         </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {updatePost();}}>
-            <Text style={styles.buttonText}>Update Post</Text> 
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => {deletePost();}}>
-            <Text style={styles.buttonText}>Delete Post</Text> 
-          </TouchableOpacity>
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput style={styles.input} multiline defaultValue={dataArray.text} onChangeText={(value) => setNewPostData(value)}/>
-        </View>
-      </View>
-    );
-  }
-  else{
-    return(
+      </ScrollView>
+    )
+  } else {
+    return (
       <View><Text>Loading</Text></View>
     )
   }
 
-
- 
-  async function getPostData(){
-    const token = await AsyncStorage.getItem('token');
-    const id = await AsyncStorage.getItem('id');
-    console.log(id);
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+userID+"/post/"+postID,{
+  async function getPostData () {
+    const token = await AsyncStorage.getItem('token')
+    const id = await AsyncStorage.getItem('id')
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, {
       method: 'GET',
       headers: {
         'X-Authorization': token
-      },
-    });
-    if(response.status ==200){
-      const body = await response.json();
-      setDataArray([]);
-      let key = body.post_id;
-      let text = body.text;
-      let time = body.timestamp;
-      let likes = body.numLikes;
-      let fName = body.author.first_name;
-      let sName = body.author.last_name;
-      let userEmail = body.author.email
-      let userID = body.author.user_id; 
-      setDataArray({key,text,time,likes,fName,sName,userEmail,userID});
+      }
+    })
+    if (response.status === 200) {
+      const body = await response.json()
+      setDataArray([])
+      const key = body.post_id
+      const text = body.text
+      var time = new Date(body.timestamp)
+      time = time.toLocaleString();
+      const likes = body.numLikes
+      const fName = body.author.first_name
+      const sName = body.author.last_name
+      const userEmail = body.author.email
+      const userID = body.author.user_id
+      setDataArray({ key, text, time, likes, fName, sName, userEmail, userID })
       setLoaded(3)
-    }
-    else{
-        setLoaded(1); 
+    } else {
+      setLoaded(1)
     }
   }
 
-
-  async function updatePost(){
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+userID+"/post/"+postID,{
+  async function updatePost () {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, {
       method: 'PATCH',
       headers: {
         'content-type': 'application/json',
-        'X-Authorization': token,
+        'X-Authorization': token
       },
       body: JSON.stringify({
-        post_id: postID,
         text: newPostData,
-        timestamp: dataArray.time,
-        author:{
-          userID:userID,
-          first_name:dataArray.fName,
-          last_name:dataArray.sName,
-          email:dataArray.email,
-        },
-        numlikes:dataArray.likes,
       })
-    });
-    console.log(response.status);
+    })
   }
 
-
-
-
-  async function deletePost(){
-    const response = await fetch("http://localhost:3333/api/1.0.0/user/"+userID+"/post/"+postID,{
+  async function deletePost () {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, {
       method: 'DELETE',
-      headers:{
-        'X-Authorization': token,
+      headers: {
+        'X-Authorization': token
       }
-    });
-    console.log(response.status);
-    if(response.status==200){
+    })
+    if (response.status === 200) {
       navigation.goBack()
     }
   }
-
-
-
-
-
 }
-
-
 
 const styles = StyleSheet.create({
   outerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex:1,
-    backgroundColor:'white',
-    marginLeft:3,
-    marginRight:3,
+    flex: 1,
+    backgroundColor: 'white',
+    marginLeft: 3,
+    marginRight: 3
   },
-  inputContainer:{
+  inputContainer: {
     alignItems: 'center',
-    flex: 10,
-    minWidth: '100%',
+    flex: 12,
+    minWidth: '100%'
   },
-  input:{
+  input: {
     borderWidth: 3,
     borderRadius: 10,
-    marginBottom: 5,
     minWidth: '100%',
-    flex:1,
+    flex: 1,
+    marginBottom: 10,
+    padding: 5
   },
-  innerContainer:{
+  innerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex:5,
-    minWidth: '100%',
-    
+    flex: 6,
+    minWidth: '100%'
   },
-  touchableOpacity:{
+  touchableOpacity: {
     width: 130,
     height: 20,
-    margin:5,
+    margin: 5,
     border: 'solid',
     borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: "#252525",
+    backgroundColor: '#252525'
   },
-  buttonContainer:{
-    flex:1,
-    flexDirection: 'row',
+  buttonContainer: {
+    flex: 1,
+    flexDirection: 'row'
   },
-  buttonText:{
-    color: "white",
+  buttonText: {
+    color: 'white'
   },
-  detailsText:{
+  detailsText: {
     fontSize: 20,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
-  detailsField:{
+  detailsField: {
     fontWeight: 'bold',
     fontSize: 20,
-    paddingTop:2,
+    paddingTop: 2,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
-  detailsTitle:{
+  detailsTitle: {
     fontWeight: 'bold',
-    fontSize: 30
+    fontSize: 30,
+    minHeight:20,
   },
-  detailsView:{
+  detailsTitleView:{
     flex:1,
-    flexDirection: 'row',
   },
-  detailsContainer:{
+  detailsView: {
+    flex: 1,
+    flexDirection: 'row'
+  },
+  detailsContainer: {
     borderWidth: 3,
     borderRadius: 10,
     marginBottom: 3,
     padding: 5,
-    minWidth: '100%',
-  }
-});
+    minWidth: '100%'
+  },
+})
 
-export default Post;
+export default Post

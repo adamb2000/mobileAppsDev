@@ -1,49 +1,37 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-function Friends ({ navigation }) {
+function Search ({ route, navigation }) {
   const [token, setToken] = useState('')
-  const [search, setSearch] = useState('')
   const [loaded, setLoaded] = useState(1)
   const [dataArray, setDataArray] = useState([])
-  const [refresh, setRefresh] = useState(true)
-  const [requests, setRequests] = useState(0)
+
+  const [firstName, setFirstName] = useState('')
+  const [secondName, setSecondName] = useState('')
+  const [User_ID,setUser_ID] = useState(route.params.UserID)
 
   useEffect(() => {
     if (token !== '') {
-      getRequests()
       getFriends()
-      const Subscription = navigation.addListener('focus', () => {
-        getRequests()
-        getFriends()
-      })
-      return Subscription
+      getUserData()
     }
     else{
       AsyncStorage.getItem('token').then((value) => setToken(value))
     }
-  }, [token])
+  }, [token,route.params.UserID])
 
   if (loaded === 3) {
     return (
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
-          <Text style={{ fontSize: 50 }}>Friends</Text>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => { navigation.navigate('Requests') }}>
-            <Text style={styles.buttonText}>Requests: {requests}</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput style={styles.input} placeholder='Search' onChangeText={(value) => setSearch(value)} />
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => { getFriends() }}>
-          <Text style={styles.buttonText}>Search</Text>
-        </TouchableOpacity>
+            <Text style={{ fontSize: 50 }}>{firstName} {secondName}</Text>
+            <Text style={{ fontSize: 50 }}>Friends</Text>
         </View>
         <View style={styles.innerContainer}>
           <FlatList
             style={styles.flatList}
-            data={dataArray} extraData={refresh}
+            data={dataArray} 
             renderItem={({ item }) =>
               <View style={styles.listView}>
                 <TouchableOpacity style={styles.userTouchableOpacity} onPress={() => { navigateUser(item.key) }}>
@@ -60,16 +48,7 @@ function Friends ({ navigation }) {
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
           <Text style={{ fontSize: 50 }}>Friends</Text>
-          <TouchableOpacity style={styles.touchableOpacity} onPress={() => { navigation.navigate('Requests') }}>
-            <Text style={styles.buttonText}>Requests: {requests}</Text>
-          </TouchableOpacity>
         </View>
-        <View style={styles.inputContainer}>
-          <TextInput style={styles.input} placeholder='Search' onChangeText={(value) => setSearch(value)} />
-        </View>
-        <TouchableOpacity style={styles.touchableOpacity} onPress={() => { getFriends() }}>
-          <Text style={styles.buttonText}>Search</Text>
-        </TouchableOpacity>
         <View style={styles.innerContainer}>
           <Text>No Friends :(</Text>
         </View>
@@ -81,8 +60,15 @@ function Friends ({ navigation }) {
     )
   }
 
-  async function getRequests () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/friendrequests', {
+
+  function navigateUser (newUserID) {
+    navigation.navigate('User',{newUserID} );
+  }
+
+
+
+  async function getUserData () {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + User_ID, {
       method: 'GET',
       headers: {
         'X-Authorization': token
@@ -90,16 +76,20 @@ function Friends ({ navigation }) {
     })
     if (response.status === 200) {
       const body = await response.json()
-      setRequests(body.length)
+      setFirstName(body.first_name)
+      setSecondName(body.last_name)
+    } else {
+      setFirstName('Error')
+      setSecondName('Error')
     }
   }
 
-  function navigateUser (userID) {
-    navigation.navigate('User', { userID })
-  }
+
+
+
 
   async function getFriends () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/search?search_in=friends&limit=20&offset=0&q=' + search, {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/'+User_ID+'/friends', {
       method: 'GET',
       headers: {
         'X-Authorization': token
@@ -117,7 +107,6 @@ function Friends ({ navigation }) {
           setDataArray(old => [...old, { key, fName, sName, email }])
         }
         setLoaded(3)
-        setRefresh(!refresh)
       } else {
         setLoaded(2)
       }
@@ -142,9 +131,9 @@ const styles = StyleSheet.create({
   },
   Title: {
     flex: 2,
-    paddingTop: 10,
+    paddingTop: 20,
     alignItems: 'center',
-    minHeight:100,
+    minHeight:150,
   },
   flatList: {
     minWidth: '100%',
@@ -173,8 +162,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-    minHeight:100,
+    flex: 1
   },
   input: {
     width: 300,
@@ -204,4 +192,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default Friends
+export default Search

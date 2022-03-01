@@ -16,6 +16,7 @@ function Drafts({ route, navigation }) {
     const [refresh, setRefresh] = useState(true)
     const [loaded, setLoaded] = useState(1)
     const [input1, setInput1] = useState('')
+    const [placeholder, setPlaceholder] = useState("Post")
 
     useEffect(() => {
         if (token !== '') {
@@ -45,7 +46,7 @@ function Drafts({ route, navigation }) {
                     </View>
                 </View>
                 <View style={styles.inputContainer}>
-                    <TextInput style={styles.input} ref={ref => { setInput1(ref) }} multiline placeholder='Post' defaultValue={newPostData} onChangeText={(value) => setNewPostData(value)} />
+                    <TextInput style={styles.input} ref={ref => { setInput1(ref) }} multiline placeholder={placeholder} defaultValue={newPostData} onChangeText={(value) => setNewPostData(value)} />
                     <View style={styles.buttonView}>
                         <TouchableOpacity style={styles.touchableOpacity} onPress={() => { newDraft() }}>
                             <Text style={styles.buttonText}>Save New Draft</Text>
@@ -82,7 +83,7 @@ function Drafts({ route, navigation }) {
                     </View>
                 </View>
                 <View style={styles.inputContainer}>
-                    <TextInput style={styles.input} ref={ref => { setInput1(ref) }} multiline placeholder='Post' defaultValue={newPostData} onChangeText={(value) => setNewPostData(value)} />
+                    <TextInput style={styles.input} ref={ref => { setInput1(ref) }} multiline placeholder={placeholder} defaultValue={newPostData} onChangeText={(value) => setNewPostData(value)} />
                     <View style={styles.buttonView}>
                         <TouchableOpacity style={styles.touchableOpacity} onPress={() => { newDraft() }}>
                             <Text style={styles.buttonText}>Save New Draft</Text>
@@ -119,39 +120,44 @@ function Drafts({ route, navigation }) {
     }
 
     async function newDraft() {
-        const oldData = await AsyncStorage.getItem(ID + '_' + UserID + '_' + 'drafts')
-        
-        if (oldData) {
-            const object = await JSON.parse(oldData);
-            if(object.length > 0){
+        if(newPostData !== ''){
+            const oldData = await AsyncStorage.getItem(ID + '_' + UserID + '_' + 'drafts')
+            if (oldData) {
+                const object = await JSON.parse(oldData);
+                if(object.length > 0){
 
-                const newID = (object[object.length-1].draftID)+1
-                object.push({draftID:newID,text:newPostData});
-                await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(object));
-                setDataArray(object);
-                setRefresh(!refresh);
-            }
-            else{
+                    const newID = (object[object.length-1].draftID)+1
+                    object.push({draftID:newID,text:newPostData});
+                    await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(object));
+                    setDataArray(object);
+                    setRefresh(!refresh);
+                }
+                else{
+                    newDraftStorage()
+                }
+                
+
+            } else {
                 newDraftStorage()
             }
-            
-
+            async function newDraftStorage(){
+                const objectArray = [{draftID:1,text:newPostData}];
+                await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(objectArray));
+                setDataArray(objectArray);
+                setRefresh(!refresh);
+                setLoaded(3);
+            }
+            input1.clear()
+            setPlaceholder('Post')
+            setNewPostData('')
         } else {
-            newDraftStorage()
+            setPlaceholder("Cannot submit empty draft")
         }
-        async function newDraftStorage(){
-            const objectArray = [{draftID:1,text:newPostData}];
-            await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(objectArray));
-            setDataArray(objectArray);
-            setRefresh(!refresh);
-            setLoaded(3);
-        }
-        input1.clear()
-        setNewPostData('')
     }
 
 
     async function postDraft(key,text){
+        setPlaceholder("Post")
         const response = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID + '/post', {
             method: 'POST',
             headers: {
@@ -164,11 +170,11 @@ function Drafts({ route, navigation }) {
         });
         if (response.status === 201) {
             deleteDraft(key)
-        }
-        else{
-            console.log(response.status)
-        }
-    }
+        } else if(response.status === 401){
+            navigation.navigate('HomePage')
+        } 
+    } 
+
 
     async function deleteDraft(key){
         const oldData = await AsyncStorage.getItem(ID + '_' + UserID + '_' + 'drafts') 

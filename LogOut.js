@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Text, View, TouchableOpacity, StyleSheet } from 'react-native'
+import React, { Text, View, TouchableOpacity, StyleSheet } from 'react-native'
 
 function LogOut ({ navigation }) {
   return (

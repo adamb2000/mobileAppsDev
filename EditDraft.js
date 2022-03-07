@@ -12,14 +12,13 @@ function EditDraft ({ route, navigation }) {
   const DraftID = route.params.draftID
 
   useEffect(() => {
-    if(post===null){
-        getDraftData()
+    if (post === null) {
+      getDraftData()
     } else {
-        console.log(post)
-        setNewPostData(post[0].text)
-        setLoaded(3)
+      console.log(post)
+      setNewPostData(post[0].text)
+      setLoaded(3)
     }
-    
   }, [post])
 
   if (loaded === 3) {
@@ -60,41 +59,38 @@ function EditDraft ({ route, navigation }) {
     )
   }
 
-
-  function getDate(timestamp){
-    let time = new Date(timestamp)
+  function getDate (timestamp) {
+    const time = new Date(timestamp)
     return time.toLocaleString()
   }
-  
+
   async function getDraftData () {
     const data = await AsyncStorage.getItem(ID + '_' + UserID + '_' + 'drafts')
     const jsonData = await JSON.parse(data)
     setPost(jsonData.filter(item => item.draftID === DraftID))
   }
 
-
-  async function updateDraft(){
-    if(newPostData !== ''){
-        const data = await AsyncStorage.getItem(ID + '_' + UserID + '_' + 'drafts')
-        const jsonData = await JSON.parse(data)
-        for(let i=0;i<jsonData.length;i++){
-            if(jsonData[i].draftID === DraftID){
-                const time = (new Date).toISOString()
-                jsonData[i].text = newPostData
-                jsonData[i].timeStamp = time
-            }
+  async function updateDraft () {
+    if (newPostData !== '') {
+      const data = await AsyncStorage.getItem(ID + '_' + UserID + '_' + 'drafts')
+      const jsonData = await JSON.parse(data)
+      for (let i = 0; i < jsonData.length; i++) {
+        if (jsonData[i].draftID === DraftID) {
+          const time = (new Date()).toISOString()
+          jsonData[i].text = newPostData
+          jsonData[i].timeStamp = time
         }
-        await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(jsonData))
-        navigation.goBack()
+      }
+      await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(jsonData))
+      navigation.goBack()
     } else {
-        setStatus(1)
+      setStatus(1)
     }
   }
 
-  async function schedulePost(){
+  async function schedulePost () {
 
   }
-  
 
   function warning () {
     if (status === 1) {
@@ -103,7 +99,7 @@ function EditDraft ({ route, navigation }) {
           <Text style={{ fontSize: 20, color: 'red' }}>Cannot Submit empty draft</Text>
         </View>
       )
-    } 
+    }
   }
 }
 
@@ -171,8 +167,8 @@ const styles = StyleSheet.create({
   },
   detailsTitleView: {
     flex: 1,
-    minHeight:60,
-    alignItems:'center'
+    minHeight: 60,
+    alignItems: 'center'
   },
   detailsView: {
     flex: 1,

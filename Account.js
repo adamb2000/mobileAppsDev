@@ -23,7 +23,6 @@ function Account ({ navigation }) {
   const [input3, setInput3] = useState('')
   const [input4, setInput4] = useState('')
 
-
   useEffect(() => {
     if (token !== '') {
       getData()
@@ -32,8 +31,7 @@ function Account ({ navigation }) {
         getData()
       })
       return Subscription
-    }
-    else{
+    } else {
       AsyncStorage.getItem('id').then((value) => setID(value))
       AsyncStorage.getItem('token').then((value) => setToken(value))
     }
@@ -78,8 +76,8 @@ function Account ({ navigation }) {
   }
 
   async function updateUserInfo () {
-    if(newFirstName !== ''  && newSecondName !== '' && newEmail !== '' && newPassword !== ''){
-      if(newPassword.length>5){
+    if (newFirstName !== '' && newSecondName !== '' && newEmail !== '' && newPassword !== '') {
+      if (newPassword.length > 5) {
         const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID, {
           method: 'PATCH',
           headers: {
@@ -105,7 +103,7 @@ function Account ({ navigation }) {
           setNewPassword('')
         } else if (response.status === 400) {
           setStatus(2)
-        } else if (response.status === 401 || response.status === 403){
+        } else if (response.status === 401 || response.status === 403) {
           AsyncStorage.removeItem('token')
           AsyncStorage.removeItem('id')
           navigation.navigate('Login')
@@ -117,6 +115,32 @@ function Account ({ navigation }) {
       }
     } else {
       setStatus(5)
+    }
+  }
+
+  async function getData () {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID, {
+      method: 'GET',
+      headers: {
+        'X-Authorization': token
+      }
+    })
+    if (response.status === 200) {
+      const body = await response.json()
+      setFirstName(body.first_name)
+      setSecondName(body.last_name)
+      setEmail(body.email)
+      setLoaded(true)
+    }
+    const imageResponse = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', {
+      method: 'GET',
+      headers: {
+        'X-Authorization': token
+      }
+    })
+    if (imageResponse.status === 200) {
+      const body = await imageResponse.blob()
+      setPhoto(URL.createObjectURL(body))
     }
   }
 
@@ -141,35 +165,6 @@ function Account ({ navigation }) {
       return (
         <Text>Please fill out all boxes with valid information</Text>
       )
-    }
-  }
-
-  async function getData () {
-    const token = await AsyncStorage.getItem('token')
-    const id = await AsyncStorage.getItem('id')
-
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + id, {
-      method: 'GET',
-      headers: {
-        'X-Authorization': token
-      }
-    })
-    if (response.status === 200) {
-      const body = await response.json()
-      setFirstName(body.first_name)
-      setSecondName(body.last_name)
-      setEmail(body.email)
-      setLoaded(true)
-    } 
-    const imageResponse = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', {
-      method: 'GET',
-      headers: {
-        'X-Authorization': token
-      }
-    })
-    if (imageResponse.status === 200) {
-      const body = await imageResponse.blob()
-      setPhoto(URL.createObjectURL(body))
     }
   }
 }

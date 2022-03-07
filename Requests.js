@@ -12,8 +12,7 @@ function Requests ({ navigation }) {
   useEffect(() => {
     if (token !== '') {
       getRequests()
-    }
-    else{
+    } else {
       AsyncStorage.getItem('token').then((value) => setToken(value))
     }
   }, [token])
@@ -89,11 +88,11 @@ function Requests ({ navigation }) {
         setLoaded(2)
       }
       setStatus(0)
-    } else if(status === 401){
+    } else if (status === 401) {
       AsyncStorage.removeItem('token')
       AsyncStorage.removeItem('id')
       navigation.navigate('Login')
-    } else{
+    } else {
       setStatus(1)
     }
   }
@@ -108,14 +107,13 @@ function Requests ({ navigation }) {
     if (response.status === 200) {
       getRequests()
       setStatus(0)
-    } else if(response.status === 401){
+    } else if (response.status === 401) {
       AsyncStorage.removeItem('token')
       AsyncStorage.removeItem('id')
       navigation.navigate('Login')
     } else {
       setStatus(1)
     }
-    
   }
 
   async function declineRequest (key) {
@@ -128,17 +126,14 @@ function Requests ({ navigation }) {
     if (response.status === 200) {
       getRequests()
       setStatus(0)
-    } else if(response.status === 401){
+    } else if (response.status === 401) {
       AsyncStorage.removeItem('token')
       AsyncStorage.removeItem('id')
       navigation.navigate('Login')
     } else {
       setStatus(1)
     }
-    
   }
-
-
 
   function warning () {
     if (status === 1) {
@@ -147,12 +142,8 @@ function Requests ({ navigation }) {
           <Text style={{ fontSize: 20, color: 'green' }}>Server Error, please try again</Text>
         </View>
       )
-    } 
+    }
   }
-
-
-
-
 }
 
 const styles = StyleSheet.create({

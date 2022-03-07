@@ -14,7 +14,7 @@ function Login ({ navigation }) {
   useEffect(async () => {
     const id = await AsyncStorage.getItem('id')
     const token = await AsyncStorage.getItem('id')
-    if(token || id){
+    if (token || id) {
       AsyncStorage.removeItem('token')
       AsyncStorage.removeItem('id')
     }
@@ -49,7 +49,7 @@ function Login ({ navigation }) {
   )
 
   async function loginApiCall () {
-    if(email !== '' && password !== ''){
+    if (email !== '' && password !== '') {
       const response = await fetch('http://localhost:3333/api/1.0.0/login', {
         method: 'POST',
         headers: {
@@ -66,6 +66,7 @@ function Login ({ navigation }) {
         try {
           await AsyncStorage.setItem('token', body.token)
           await AsyncStorage.setItem('id', body.id)
+          console.log(body.token)
         } catch (e) {
           console.log('error', e)
         }
@@ -74,9 +75,9 @@ function Login ({ navigation }) {
         setEmail('')
         setPassword('')
         navigation.navigate('LoggedIn')
-        //console.log(body.token)
-        //console.log(body.id)
-      } else if(response.status === 400) {
+        // console.log(body.token)
+        // console.log(body.id)
+      } else if (response.status === 400) {
         setUnsuccessful(1)
       } else {
         setUnsuccessful(2)
@@ -93,7 +94,7 @@ function Login ({ navigation }) {
           <Text style={{ fontSize: 20, color: 'red' }}>Invalid Credentials</Text>
         </View>
       )
-    } else if(unsuccessful === 2){
+    } else if (unsuccessful === 2) {
       return (
         <View>
           <Text style={{ fontSize: 20, color: 'red' }}>Server Error</Text>

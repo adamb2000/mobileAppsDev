@@ -7,14 +7,14 @@ function Post ({ route, navigation }) {
   const [loaded, setLoaded] = useState(1)
   const [newPostData, setNewPostData] = useState('')
   const [dataArray, setDataArray] = useState([])
+  const [status, setStatus] = useState(0)
   const postID = route.params.postID
   const userID = route.params.UserID
 
   useEffect(() => {
     if (token !== '') {
       getPostData()
-    }
-    else{
+    } else {
       AsyncStorage.getItem('token').then((value) => setToken(value))
     }
   }, [token])
@@ -36,6 +36,7 @@ function Post ({ route, navigation }) {
             </View>
           </View>
           <View style={styles.detailsTitleView}>
+            {warning()}
             <Text style={styles.detailsTitle}>Content:</Text>
           </View>
           <View style={styles.buttonContainer}>
@@ -59,8 +60,6 @@ function Post ({ route, navigation }) {
   }
 
   async function getPostData () {
-    const token = await AsyncStorage.getItem('token')
-    const id = await AsyncStorage.getItem('id')
     const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, {
       method: 'GET',
       headers: {
@@ -72,8 +71,8 @@ function Post ({ route, navigation }) {
       setDataArray([])
       const key = body.post_id
       const text = body.text
-      var time = new Date(body.timestamp)
-      time = time.toLocaleString();
+      let time = new Date(body.timestamp)
+      time = time.toLocaleString()
       const likes = body.numLikes
       const fName = body.author.first_name
       const sName = body.author.last_name
@@ -87,16 +86,33 @@ function Post ({ route, navigation }) {
   }
 
   async function updatePost () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, {
-      method: 'PATCH',
-      headers: {
-        'content-type': 'application/json',
-        'X-Authorization': token
-      },
-      body: JSON.stringify({
-        text: newPostData,
+    if (newPostData !== '') {
+      const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, {
+        method: 'PATCH',
+        headers: {
+          'content-type': 'application/json',
+          'X-Authorization': token
+        },
+        body: JSON.stringify({
+          text: newPostData
+        })
       })
-    })
+      if (response.status === 200) {
+        navigation.goBack()
+      } else if (response.status === 400 || response.status === 404) {
+        setStatus(1)
+      } else if (response.status === 401) {
+        AsyncStorage.removeItem('token')
+        AsyncStorage.removeItem('id')
+        navigation.navigate('Login')
+      } else if (response.status === 403) {
+        setStatus(2)
+      } else if (response.status === 500) {
+        setStatus(3)
+      }
+    } else {
+      setStatus(4)
+    }
   }
 
   async function deletePost () {
@@ -108,6 +124,44 @@ function Post ({ route, navigation }) {
     })
     if (response.status === 200) {
       navigation.goBack()
+    } else if (response.status === 400 || response.status === 404) {
+      setStatus(1)
+    } else if (response.status === 401) {
+      AsyncStorage.removeItem('token')
+      AsyncStorage.removeItem('id')
+      navigation.navigate('Login')
+    } else if (response.status === 403) {
+      setStatus(2)
+    } else if (response.status === 500) {
+      setStatus(3)
+    }
+  }
+
+  function warning () {
+    if (status === 1) {
+      return (
+        <View>
+          <Text style={{ fontSize: 20, color: 'green' }}>Bad Request - Post may no longer exist</Text>
+        </View>
+      )
+    } else if (status === 2) {
+      return (
+        <View>
+          <Text style={{ fontSize: 20, color: '#252525' }}>Error - You can only ammend your own posts</Text>
+        </View>
+      )
+    } else if (status === 3) {
+      return (
+        <View>
+          <Text style={{ fontSize: 20, color: '#252525' }}>Server Error - please try again</Text>
+        </View>
+      )
+    } else if (status === 4) {
+      return (
+        <View>
+          <Text style={{ fontSize: 20, color: '#252525' }}>Cannot submit empty post</Text>
+        </View>
+      )
     }
   }
 }
@@ -172,10 +226,12 @@ const styles = StyleSheet.create({
   detailsTitle: {
     fontWeight: 'bold',
     fontSize: 30,
-    minHeight:20,
+    minHeight: 20
   },
-  detailsTitleView:{
-    flex:1,
+  detailsTitleView: {
+    flex: 1,
+    minHeight: 60,
+    alignItems: 'center'
   },
   detailsView: {
     flex: 1,
@@ -187,7 +243,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     padding: 5,
     minWidth: '100%'
-  },
+  }
 })
 
 export default Post

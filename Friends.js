@@ -19,8 +19,7 @@ function Friends ({ navigation }) {
         getFriends()
       })
       return Subscription
-    }
-    else{
+    } else {
       AsyncStorage.getItem('token').then((value) => setToken(value))
     }
   }, [token])
@@ -37,8 +36,8 @@ function Friends ({ navigation }) {
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} placeholder='Search' onChangeText={(value) => setSearch(value)} />
           <TouchableOpacity style={styles.touchableOpacity} onPress={() => { getFriends() }}>
-          <Text style={styles.buttonText}>Search</Text>
-        </TouchableOpacity>
+            <Text style={styles.buttonText}>Search</Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.innerContainer}>
           <FlatList
@@ -144,7 +143,7 @@ const styles = StyleSheet.create({
     flex: 2,
     paddingTop: 10,
     alignItems: 'center',
-    minHeight:100,
+    minHeight: 100
   },
   flatList: {
     minWidth: '100%',
@@ -174,7 +173,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    minHeight:100,
+    minHeight: 100
   },
   input: {
     width: 300,

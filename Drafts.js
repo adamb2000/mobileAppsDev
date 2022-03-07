@@ -16,7 +16,7 @@ function Drafts ({ route, navigation }) {
   const [loaded, setLoaded] = useState(1)
   const [input1, setInput1] = useState('')
   const [placeholder, setPlaceholder] = useState('Post')
-  //AsyncStorage.clear()
+  // AsyncStorage.clear()
 
   useEffect(() => {
     if (token !== '') {
@@ -37,7 +37,7 @@ function Drafts ({ route, navigation }) {
         <View style={styles.Title}>
           <View style={styles.titleTextView}>
             <Text style={styles.titleText}>Saved Drafts for </Text>
-            <Text style={styles.titleText}>{firstName} {secondName}'s page </Text>
+            <Text style={styles.titleText}>{firstName} {secondName}s page </Text>
           </View>
         </View>
         <View style={styles.inputContainer}>
@@ -63,7 +63,7 @@ function Drafts ({ route, navigation }) {
                   <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { deleteDraft(item.draftID) }}>
                     <Text style={styles.buttonText}>Delete Draft</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { navigation.navigate('EditDrafts',{ID:ID,UserID:UserID,draftID:item.draftID}) }}>
+                  <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { navigation.navigate('EditDrafts', { ID: ID, UserID: UserID, draftID: item.draftID }) }}>
                     <Text style={styles.buttonText}>Edit Draft</Text>
                   </TouchableOpacity>
                 </View>
@@ -78,7 +78,7 @@ function Drafts ({ route, navigation }) {
         <View style={styles.Title}>
           <View style={styles.titleTextView}>
             <Text style={styles.titleText}>Saved Drafts for </Text>
-            <Text style={styles.titleText}>{firstName} {secondName}'s page </Text>
+            <Text style={styles.titleText}>{firstName} {secondName}s page </Text>
           </View>
         </View>
         <View style={styles.inputContainer}>
@@ -100,13 +100,6 @@ function Drafts ({ route, navigation }) {
     )
   }
 
-
-  function getDate(timestamp){
-    let time = new Date(timestamp)
-    return time.toLocaleString()
-  }
-  
-
   async function getDraftData () {
     const data = await AsyncStorage.getItem(ID + '_' + UserID + '_' + 'drafts')
     if (data) {
@@ -124,13 +117,13 @@ function Drafts ({ route, navigation }) {
 
   async function newDraft () {
     if (newPostData !== '') {
-      const time = (new Date).toISOString()
+      const time = (new Date()).toISOString()
       const oldData = await AsyncStorage.getItem(ID + '_' + UserID + '_' + 'drafts')
       if (oldData) {
         const object = await JSON.parse(oldData)
         if (object.length > 0) {
           const newID = (object[object.length - 1].draftID) + 1
-          object.push({ draftID: newID, text: newPostData, timeStamp:time,scheduled:'False',scheduleTime:null })
+          object.push({ draftID: newID, text: newPostData, timeStamp: time, scheduled: 'False', scheduleTime: null })
           await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(object))
           setDataArray(object)
           setRefresh(!refresh)
@@ -141,7 +134,7 @@ function Drafts ({ route, navigation }) {
         newDraftStorage()
       }
       async function newDraftStorage () {
-        const objectArray = [{ draftID: 1, text: newPostData,timeStamp:time,scheduled:'False',scheduleTime:null }]
+        const objectArray = [{ draftID: 1, text: newPostData, timeStamp: time, scheduled: 'False', scheduleTime: null }]
         await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(objectArray))
         setDataArray(objectArray)
         setRefresh(!refresh)
@@ -180,6 +173,11 @@ function Drafts ({ route, navigation }) {
     const result = object.filter(item => item.draftID !== key)
     await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(result))
     getDraftData()
+  }
+
+  function getDate (timestamp) {
+    const time = new Date(timestamp)
+    return time.toLocaleString()
   }
 }
 

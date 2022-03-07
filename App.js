@@ -2,7 +2,7 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createDrawerNavigator } from '@react-navigation/drawer'
-import { Image } from 'react-native'
+import React, { Image } from 'react-native'
 
 import HomePage from './HomePage.js'
 import Login from './Login.js'
@@ -17,6 +17,7 @@ import Requests from './Requests.js'
 import TakePhoto from './TakePhoto.js'
 import ViewFriends from './ViewFriends.js'
 import Drafts from './Drafts.js'
+import EditDrafts from './EditDraft.js'
 
 const homeImage = require('./home.png')
 const friendsImage = require('./friends.png')
@@ -25,7 +26,6 @@ const searchImage = require('./search.png')
 const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
 const Drawer = createDrawerNavigator()
-
 
 function App () {
   return (
@@ -40,13 +40,11 @@ function App () {
         <Stack.Screen name='TakePhoto' component={TakePhoto} options={{ headerShown: true }} />
         <Stack.Screen name='ViewFriends' component={ViewFriends} options={{ headerShown: true }} />
         <Stack.Screen name='Drafts' component={Drafts} options={{ headerShown: true }} />
+        <Stack.Screen name='EditDrafts' component={EditDrafts} options={{ headerShown: true }} />
       </Stack.Navigator>
     </NavigationContainer>
   )
 }
-
-//DELETE /user/{user_id}/post/{post_id}/like
-
 
 function LoggedIn () {
   return (

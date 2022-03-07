@@ -9,29 +9,28 @@ function Search ({ route, navigation }) {
 
   const [firstName, setFirstName] = useState('')
   const [secondName, setSecondName] = useState('')
-  const [User_ID,setUser_ID] = useState(route.params.UserID)
+  const userID = route.params.UserID
 
   useEffect(() => {
     if (token !== '') {
       getFriends()
       getUserData()
-    }
-    else{
+    } else {
       AsyncStorage.getItem('token').then((value) => setToken(value))
     }
-  }, [token,route.params.UserID])
+  }, [token, route.params.UserID])
 
   if (loaded === 3) {
     return (
       <View style={styles.outerContainer}>
         <View style={styles.Title}>
-            <Text style={{ fontSize: 50 }}>{firstName} {secondName}</Text>
-            <Text style={{ fontSize: 50 }}>Friends</Text>
+          <Text style={{ fontSize: 50 }}>{firstName} {secondName}</Text>
+          <Text style={{ fontSize: 50 }}>Friends</Text>
         </View>
         <View style={styles.innerContainer}>
           <FlatList
             style={styles.flatList}
-            data={dataArray} 
+            data={dataArray}
             renderItem={({ item }) =>
               <View style={styles.listView}>
                 <TouchableOpacity style={styles.userTouchableOpacity} onPress={() => { navigateUser(item.key) }}>
@@ -60,15 +59,8 @@ function Search ({ route, navigation }) {
     )
   }
 
-
-  function navigateUser (newUserID) {
-    navigation.navigate('User',{newUserID} );
-  }
-
-
-
   async function getUserData () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + User_ID, {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID, {
       method: 'GET',
       headers: {
         'X-Authorization': token
@@ -84,12 +76,8 @@ function Search ({ route, navigation }) {
     }
   }
 
-
-
-
-
   async function getFriends () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/'+User_ID+'/friends', {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/friends', {
       method: 'GET',
       headers: {
         'X-Authorization': token
@@ -114,6 +102,10 @@ function Search ({ route, navigation }) {
       setLoaded(1)
     }
   }
+
+  function navigateUser (newUserID) {
+    navigation.navigate('User', { newUserID })
+  }
 }
 
 const styles = StyleSheet.create({
@@ -133,7 +125,7 @@ const styles = StyleSheet.create({
     flex: 2,
     paddingTop: 20,
     alignItems: 'center',
-    minHeight:150,
+    minHeight: 150
   },
   flatList: {
     minWidth: '100%',

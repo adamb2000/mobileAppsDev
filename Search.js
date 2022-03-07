@@ -13,8 +13,7 @@ function Search ({ navigation }) {
   useEffect(() => {
     if (token !== '') {
       getSearchData()
-    }
-    else{
+    } else {
       AsyncStorage.getItem('id').then((value) => setID(value))
       AsyncStorage.getItem('token').then((value) => setToken(value))
     }
@@ -39,8 +38,8 @@ function Search ({ navigation }) {
             renderItem={({ item }) =>
               <View style={styles.listView}>
                 <TouchableOpacity style={styles.userTouchableOpacity} onPress={() => { navigateUser(item.key) }}>
-                  <Text style={styles.listTextName}>{item.fName} {item.sName}</Text>
-                  <Text style={styles.listText}>{item.email}</Text>
+                  <Text style={styles.listTextName}>{item.email}</Text>
+                  <Text style={styles.listText}>{item.fName} {item.sName}</Text>
                 </TouchableOpacity>
               </View>}
           />
@@ -70,17 +69,13 @@ function Search ({ navigation }) {
     )
   }
 
-  function navigateUser (userID) {
-    navigation.navigate('User', { userID })
-  }
-
   async function getSearchData () {
     const response = await fetch('http://localhost:3333/api/1.0.0/search?search_in=all&limit=20&offset=0&q=' + search, {
       method: 'GET',
       headers: {
         'X-Authorization': token
       }
-    });
+    })
     if (response.status === 200) {
       const body = await response.json()
       if (body.length > 0) {
@@ -102,6 +97,10 @@ function Search ({ navigation }) {
     } else {
       setLoaded(1)
     }
+  }
+
+  function navigateUser (userID) {
+    navigation.navigate('User', { userID })
   }
 }
 

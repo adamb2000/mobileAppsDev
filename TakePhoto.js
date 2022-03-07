@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Camera } from 'expo-camera'
 
@@ -10,7 +10,7 @@ function TakePhoto ({ navigation }) {
 
   const [types, setType] = useState(Camera.Constants.Type.front)
   const [hasPermission, setHasPermission] = useState(null)
-  const [cameraRef,setCameraRef] = useState("");
+  const [cameraRef, setCameraRef] = useState('')
 
   useEffect(async () => {
     AsyncStorage.getItem('id').then((value) => setID(value))
@@ -44,16 +44,8 @@ function TakePhoto ({ navigation }) {
     )
   }
 
-  async function capturePhoto () {
-    if (cameraRef) {
-      const options = {quality: 0.5, base64: true, onPictureSaved: (data) => sendToServer(data)}
-      const photo = await cameraRef.takePictureAsync(options)
-      console.log('photo', photo)
-    }
-  }
-
   async function sendToServer (data) {
-    const capture = await fetch(data.base64);
+    const capture = await fetch(data.base64)
     const blob = await capture.blob()
 
     const response = fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', {
@@ -66,13 +58,21 @@ function TakePhoto ({ navigation }) {
     })
     console.log(response.status)
   }
+
+  async function capturePhoto () {
+    if (cameraRef) {
+      const options = { quality: 0.5, base64: true, onPictureSaved: (data) => sendToServer(data) }
+      const photo = await cameraRef.takePictureAsync(options)
+      console.log('photo', photo)
+    }
+  }
 }
 
 const styles = StyleSheet.create({
   outerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
+    flex: 1
   },
   innerContainer: {
     alignItems: 'center',
@@ -80,16 +80,17 @@ const styles = StyleSheet.create({
   },
   touchableOpacity: {
     marginTop: 10,
+    width: 100,
     marginBottom: 20,
     border: 'solid',
-    borderRadius: 100,
+    borderRadius: 70,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#252525',
-    flex:1
+    flex: 1
   },
-  buttonView:{
-    flex:0.1,
+  buttonView: {
+    flex: 0.1
   },
   buttonText: {
     color: 'white'
@@ -98,9 +99,11 @@ const styles = StyleSheet.create({
     color: '#252525',
     fontSize: 20
   },
-  camera:{
+  camera: {
     flex: 10,
-  },
+    width: '100%',
+    alignItems: 'center'
+  }
 })
 
 export default TakePhoto

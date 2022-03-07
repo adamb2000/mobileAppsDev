@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Image } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-function HomePage({ route, navigation }) {
+function HomePage ({ route, navigation }) {
   const [token, setToken] = useState('')
   const [ID, setID] = useState('')
   const [firstName, setFirstName] = useState('')
@@ -15,8 +15,9 @@ function HomePage({ route, navigation }) {
   const [loaded, setLoaded] = useState(1)
   const [UserID, setUserID] = useState(route.params.userID)
   const [input1, setInput1] = useState('')
-  const [status,setStatus] = useState(0)
-  const [placeholder, setPlaceholder] = useState("Post")
+  const [status, setStatus] = useState(0)
+  const [error, setError] = useState('')
+  const [placeholder, setPlaceholder] = useState('Post')
 
   useEffect(() => {
     if (token !== '') {
@@ -27,8 +28,7 @@ function HomePage({ route, navigation }) {
         getPostData()
       })
       return Subscription
-    }
-    else {
+    } else {
       AsyncStorage.getItem('id').then((value) => setID(value))
       AsyncStorage.getItem('token').then((value) => setToken(value))
     }
@@ -42,14 +42,11 @@ function HomePage({ route, navigation }) {
   }, [route.params.newUserID])
 
   useEffect(() => {
-    if (loaded === 1 && token !== "") {
-      getPostData();
-      getUserData();
+    if (loaded === 1 && token !== '') {
+      getPostData()
+      getUserData()
     }
   }, [loaded])
-
-
-
 
   if (loaded === 3) {
     return (
@@ -69,7 +66,7 @@ function HomePage({ route, navigation }) {
             <TouchableOpacity style={styles.touchableOpacity} onPress={() => { navigation.navigate('ViewFriends', { UserID }) }}>
               <Text style={styles.buttonText}>View Friends</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.touchableOpacity} onPress={() => { navigation.navigate('Drafts', {firstName,secondName,UserID,newPostData}) }}>
+            <TouchableOpacity style={styles.touchableOpacity} onPress={() => { navigation.navigate('Drafts', { firstName, secondName, UserID, newPostData }) }}>
               <Text style={styles.buttonText}>Drafts</Text>
             </TouchableOpacity>
           </View>
@@ -109,7 +106,7 @@ function HomePage({ route, navigation }) {
             <TouchableOpacity style={styles.touchableOpacity} onPress={() => { navigation.navigate('ViewFriends', { UserID }) }}>
               <Text style={styles.buttonText}>View Friends</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.touchableOpacity} onPress={() => { navigation.navigate('Drafts', {firstName,secondName,UserID,newPostData}) }}>
+            <TouchableOpacity style={styles.touchableOpacity} onPress={() => { navigation.navigate('Drafts', { firstName, secondName, UserID, newPostData }) }}>
               <Text style={styles.buttonText}>Drafts</Text>
             </TouchableOpacity>
           </View>
@@ -139,11 +136,14 @@ function HomePage({ route, navigation }) {
     )
   } else {
     return (
-      <View><Text>Loading</Text></View>
+      <View>
+        <View><Text>Loading</Text></View>
+        <View><Text>{error}</Text></View>
+      </View>
     )
   }
 
-  function getButtons(item) {
+  function getButtons (item) {
     if (item.userID === parseInt(ID)) {
       return (
         <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { editPost(item.key) }}>
@@ -159,29 +159,46 @@ function HomePage({ route, navigation }) {
     }
   }
 
-  function editPost(postID) {
-    navigation.navigate('Post', { postID, UserID })
-  }
-
-  async function likePost(postID) {
+  async function likePost (postID) {
     const response = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID + '/post/' + postID + '/like', {
       method: 'POST',
       headers: {
         'X-Authorization': token
       }
-    });
+    })
     if (response.status === 200) {
       getPostData()
+    } else if (response.status === 400) {
+      dislikePost(postID)
+    } else {
+      console.log('Server Error')
     }
   }
 
-  async function getUserData() {
+  async function dislikePost (postID) {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID + '/post/' + postID + '/like', {
+      method: 'DELETE',
+      headers: {
+        'X-Authorization': token
+      }
+    })
+    console.log(response.status)
+    if (response.status === 200) {
+      getPostData()
+    } else if (response.status === 400) {
+      likePost(postID)
+    } else {
+      console.log('Server Error')
+    }
+  }
+
+  async function getUserData () {
     const response = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID, {
       method: 'GET',
       headers: {
         'X-Authorization': token
       }
-    });
+    })
     if (response.status === 200) {
       const body = await response.json()
       setFirstName(body.first_name)
@@ -192,10 +209,10 @@ function HomePage({ route, navigation }) {
       navigation.navigate('Login')
     } else if (response.status === 404) {
       setLoaded(1)
-      setError("Error - User Not Found")
+      setError('Error - User Not Found')
     } else if (response.status === 500) {
       setLoaded(1)
-      setError("Server Error")
+      setError('Server Error')
     }
     const imageResponse = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID + '/photo', {
       method: 'GET',
@@ -209,7 +226,7 @@ function HomePage({ route, navigation }) {
     }
   }
 
-  async function addFriend() {
+  async function addFriend () {
     const response = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID + '/friends', {
       method: 'POST',
       headers: {
@@ -218,14 +235,14 @@ function HomePage({ route, navigation }) {
     })
     if (response.status === 201) {
       setStatus(1)
-    } else if(response.status === 403){
+    } else if (response.status === 403) {
       setStatus(2)
-    } else if(response.status === 404 || response.status === 500){
+    } else if (response.status === 404 || response.status === 500) {
       setStatus(3)
     }
   }
 
-  async function getPostData() {
+  async function getPostData () {
     const response = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID + '/post', {
       method: 'GET',
       headers: {
@@ -239,7 +256,7 @@ function HomePage({ route, navigation }) {
         for (let i = 0; i < body.length; i++) {
           const key = body[i].post_id
           const text = body[i].text
-          var time = new Date(body[i].timestamp)
+          let time = new Date(body[i].timestamp)
           time = time.toLocaleString()
           const likes = body[i].numLikes
           const fName = body[i].author.first_name
@@ -257,17 +274,17 @@ function HomePage({ route, navigation }) {
       AsyncStorage.removeItem('token')
       AsyncStorage.removeItem('id')
       navigation.navigate('Login')
-    } else if(response.status === 500){
+    } else if (response.status === 500) {
       setLoaded(1)
-      setError("Server Error ")
+      setError('Server Error ')
     } else {
       setLoaded(1)
     }
     setRefresh(!refresh)
   }
 
-  async function sendNewPostData() {
-    if(newPostData !== ''){
+  async function sendNewPostData () {
+    if (newPostData !== '') {
       const response = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID + '/post', {
         method: 'POST',
         headers: {
@@ -280,18 +297,18 @@ function HomePage({ route, navigation }) {
       })
       if (response.status === 201) {
         input1.clear()
-        setNewPostData("")
-        setPlaceholder("Post")
+        setNewPostData('')
+        setPlaceholder('Post')
         getPostData()
       }
     } else {
-      setPlaceholder("Cannot Submit Empty Post")
+      setPlaceholder('Cannot Submit Empty Post')
     }
   }
 
-
-
-
+  function editPost (postID) {
+    navigation.navigate('Post', { postID, UserID })
+  }
 
   function warning () {
     if (status === 1) {
@@ -300,13 +317,13 @@ function HomePage({ route, navigation }) {
           <Text style={{ fontSize: 20, color: '#252525' }}>Request Submitted!</Text>
         </View>
       )
-    } else if(status === 2){
+    } else if (status === 2) {
       return (
         <View>
           <Text style={{ fontSize: 20, color: '#252525' }}>Request Already Submitted!</Text>
         </View>
       )
-    } else if(status === 3){
+    } else if (status === 3) {
       return (
         <View>
           <Text style={{ fontSize: 20, color: '#252525' }}>Server Error, please try again</Text>
@@ -314,9 +331,6 @@ function HomePage({ route, navigation }) {
       )
     }
   }
-
-
-
 }
 
 const styles = StyleSheet.create({
@@ -332,7 +346,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 3,
-    width: '100%',
+    width: '100%'
   },
   input: {
     height: 80,
@@ -343,14 +357,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     textAlign: 'center',
     width: '100%',
-    flex: 4,
+    flex: 4
   },
   innerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     flex: 15,
     minWidth: '100%',
-    marginTop: 10,
+    marginTop: 10
   },
   listView: {
     borderWidth: 3,
@@ -364,7 +378,7 @@ const styles = StyleSheet.create({
   },
   listText: {
     fontSize: 15,
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   listButtonView: {
     alignItems: 'center',
@@ -378,20 +392,20 @@ const styles = StyleSheet.create({
     flex: 3,
     marginBottom: 5,
     justifyContent: 'center',
-    alignItems:'center',
+    alignItems: 'center',
     width: '100%',
-    minHeight: 110,
+    minHeight: 110
   },
   titleText: {
     fontSize: 40,
     color: '#252525',
-    alignContent:'center',
-    justifyContent:'center',
+    alignContent: 'center',
+    justifyContent: 'center'
   },
   titleTextView: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   touchableOpacity: {
     width: 120,
@@ -402,7 +416,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#252525',
-    marginLeft: 3,
+    marginLeft: 3
   },
   listTouchableOpacity: {
     width: 40,
@@ -424,13 +438,14 @@ const styles = StyleSheet.create({
   buttonView: {
     flex: 1,
     flexDirection: 'row',
+    minHeight: 30
   },
   image: {
     width: 100,
     height: 100,
     border: 'solid',
     borderRadius: 10,
-    borderWidth: 3,
+    borderWidth: 3
   }
 })
 

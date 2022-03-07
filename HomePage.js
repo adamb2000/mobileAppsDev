@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, View, FlatList, TextInput, TouchableOpacity, Image } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
-function HomePage({ navigation }) {
+function HomePage ({ navigation }) {
   const [token, setToken] = useState('')
   const [ID, setID] = useState('')
   const [firstName, setFirstName] = useState('')
@@ -10,11 +10,11 @@ function HomePage({ navigation }) {
   const [newPostData, setNewPostData] = useState('')
   const [dataArray, setDataArray] = useState([])
   const [photo, setPhoto] = useState(null)
-  const [error, setError] = useState("")
+  const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(true)
   const [loaded, setLoaded] = useState(1)
   const [input1, setInput1] = useState('')
-  const [placeholder, setPlaceholder] = useState("Post")
+  const [placeholder, setPlaceholder] = useState('Post')
 
   useEffect(() => {
     if (token !== '') {
@@ -23,8 +23,7 @@ function HomePage({ navigation }) {
         getUserData()
       })
       return Subscription
-    }
-    else {
+    } else {
       AsyncStorage.getItem('id').then((value) => setID(value))
       AsyncStorage.getItem('token').then((value) => setToken(value))
     }
@@ -101,45 +100,7 @@ function HomePage({ navigation }) {
     )
   }
 
-  function navigateDraft(UserID) {
-    navigation.navigate('Drafts', { firstName, secondName, UserID, newPostData })
-  }
-
-
-  function getButtons(item) {
-    if (item.userID === parseInt(ID)) {
-      return (
-        <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { editPost(item.key) }}>
-          <Text style={styles.buttonText}>Edit</Text>
-        </TouchableOpacity>
-      )
-    } else {
-      return (
-        <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { likePost(item.key) }}>
-          <Text style={styles.buttonText}>Like</Text>
-        </TouchableOpacity>
-      )
-    }
-  }
-
-  function editPost(postID) {
-    const UserID = ID
-    navigation.navigate('Post', { postID, UserID })
-  }
-
-  async function likePost(postID) {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post/' + postID + '/like', {
-      method: 'POST',
-      headers: {
-        'X-Authorization': token
-      }
-    })
-    if (response.status === 200) {
-      getPostData()
-    }
-  }
-
-  async function getUserData() {
+  async function getUserData () {
     const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID, {
       method: 'GET',
       headers: {
@@ -156,10 +117,10 @@ function HomePage({ navigation }) {
       navigation.navigate('Login')
     } else if (response.status === 404) {
       setLoaded(1)
-      setError("Error - User Not Found")
+      setError('Error - User Not Found')
     } else if (response.status === 500) {
       setLoaded(1)
-      setError("Server Error")
+      setError('Server Error')
     }
     const imageResponse = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', {
       method: 'GET',
@@ -174,7 +135,7 @@ function HomePage({ navigation }) {
     getPostData()
   }
 
-  async function getPostData() {
+  async function getPostData () {
     const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post', {
       method: 'GET',
       headers: {
@@ -187,9 +148,9 @@ function HomePage({ navigation }) {
         setDataArray([])
         for (let i = 0; i < body.length; i++) {
           const key = body[i].post_id
-          const text = body[i].text;
-          var time = new Date(body[i].timestamp)
-          time = time.toLocaleString();
+          const text = body[i].text
+          let time = new Date(body[i].timestamp)
+          time = time.toLocaleString()
           const likes = body[i].numLikes
           const fName = body[i].author.first_name
           const sName = body[i].author.last_name
@@ -204,14 +165,14 @@ function HomePage({ navigation }) {
       AsyncStorage.removeItem('token')
       AsyncStorage.removeItem('id')
       navigation.navigate('Login')
-    } else if(response.status === 500){
+    } else if (response.status === 500) {
       setLoaded(1)
-      setError("Server Error ")
+      setError('Server Error ')
     }
     setRefresh(!refresh)
   }
 
-  async function sendNewPostData() {
+  async function sendNewPostData () {
     if (newPostData !== '') {
       const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post', {
         method: 'POST',
@@ -224,20 +185,36 @@ function HomePage({ navigation }) {
         })
       })
       if (response.status === 201) {
-        setPlaceholder("Post")
+        setPlaceholder('Post')
         input1.clear()
         setNewPostData('')
         getPostData()
       } else if (response.status === 500) {
-        setPlaceholder("Server Error")
+        setPlaceholder('Server Error')
       }
     } else {
-      setPlaceholder("Cannot Submit Empty Post")
+      setPlaceholder('Cannot Submit Empty Post')
     }
   }
 
+  function navigateDraft (UserID) {
+    navigation.navigate('Drafts', { firstName, secondName, UserID, newPostData })
+  }
 
+  function getButtons (item) {
+    if (item.userID === parseInt(ID)) {
+      return (
+        <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { editPost(item.key) }}>
+          <Text style={styles.buttonText}>Edit</Text>
+        </TouchableOpacity>
+      )
+    }
+  }
 
+  function editPost (postID) {
+    const UserID = ID
+    navigation.navigate('Post', { postID, UserID })
+  }
 }
 
 const styles = StyleSheet.create({
@@ -284,7 +261,7 @@ const styles = StyleSheet.create({
   },
   listText: {
     fontSize: 15,
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   listButtonView: {
     alignItems: 'center',
@@ -299,14 +276,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     width: '100%',
     justifyContent: 'center',
-    alignItems:'center',
-    minHeight: 100,
+    alignItems: 'center',
+    minHeight: 100
   },
   titleText: {
     fontSize: 40,
     color: '#252525',
-    alignContent:'center',
-    justifyContent:'center',
+    alignContent: 'center',
+    justifyContent: 'center'
   },
   touchableOpacity: {
     width: 130,
@@ -334,6 +311,7 @@ const styles = StyleSheet.create({
   buttonView: {
     flex: 2,
     flexDirection: 'row',
+    minHeight: 30
   },
   flatList: {
     minWidth: '100%',
@@ -342,7 +320,7 @@ const styles = StyleSheet.create({
   titleTextView: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   image: {
     width: 100,

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity, Image } from 'react-native'
 const image = require('./spacebook.jpg')
 
@@ -45,8 +45,8 @@ function SignUp ({ navigation }) {
   )
 
   async function newUserApiCall () {
-    if(firstName !== '' && secondName !== '' && email !== '' && password !== ''){
-      if(password.length >5){
+    if (firstName !== '' && secondName !== '' && email !== '' && password !== '') {
+      if (password.length > 5) {
         const response = await fetch('http://localhost:3333/api/1.0.0/user', {
           method: 'POST',
           headers: {
@@ -71,22 +71,24 @@ function SignUp ({ navigation }) {
           setPassword('')
         } else if (response.status === 400) {
           const responseBody = await response.text()
-          if(responseBody === "Bad Request - body must match specification and email must be correct"){
+          if (responseBody === 'Bad Request - body must match specification and email must be correct') {
             setUnsuccessful(5)
-          } else if(responseBody === "Bad request - email must be valid and password greater than 5 characters"){
+          } else if (responseBody === 'Bad request - email must be valid and password greater than 5 characters') {
             setUnsuccessful(6)
           } else {
             setUnsuccessful(2)
           }
-        } else if (response.status === 500){
+        } else if (response.status === 500) {
           setUnsuccessful(3)
         }
       } else {
         setUnsuccessful(6)
       }
-    } else (
-      setUnsuccessful(4)
-    )
+    } else {
+      (
+        setUnsuccessful(4)
+      )
+    }
   }
 
   function warning () {
@@ -120,8 +122,7 @@ function SignUp ({ navigation }) {
           <Text style={{ fontSize: 20, color: '#252525' }}>Invalid Email Address</Text>
         </View>
       )
-    }
-    else if (unsuccessful === 6) {
+    } else if (unsuccessful === 6) {
       return (
         <View>
           <Text style={{ fontSize: 20, color: '#252525' }}>Password Must be Greater than 5 Characters</Text>
@@ -129,8 +130,6 @@ function SignUp ({ navigation }) {
       )
     }
   }
-
-
 }
 
 const styles = StyleSheet.create({

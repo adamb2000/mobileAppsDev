@@ -20,13 +20,13 @@ function Account ({ navigation }) {
 
   const [input1, setInput1] = useState('')
   const [input2, setInput2] = useState('')
-  const [input3, setInput3] = useState('')
+  const [input3, setInput3] = useState('') // input referneces so they can be cleared using input.clear()
   const [input4, setInput4] = useState('')
 
   useEffect(() => {
-    if (token !== '') {
+    if (token !== '') { // Usestate used to only run code once token has been retireved from async storage
       getData()
-      const Subscription = navigation.addListener('focus', () => {
+      const Subscription = navigation.addListener('focus', () => { // subscription used to refresh page when user navigates back here
         setStatus(1)
         getData()
       })
@@ -76,7 +76,7 @@ function Account ({ navigation }) {
   }
 
   async function updateUserInfo () {
-    if (newFirstName !== '' && newSecondName !== '' && newEmail !== '' && newPassword !== '') {
+    if (newFirstName !== '' && newSecondName !== '' && newEmail !== '' && newPassword !== '') { // can only submit info if all boxes are populated
       if (newPassword.length > 5) {
         const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID, {
           method: 'PATCH',
@@ -95,17 +95,17 @@ function Account ({ navigation }) {
           setStatus(3)
           input1.clear()
           input2.clear()
-          input3.clear()
+          input3.clear() // clear inputs if request is okay
           input4.clear()
           setNewFirstName('')
-          setNewSecondName('')
+          setNewSecondName('') // set states to empty string so it doesnt hold data about the last request
           setNewEmail('')
           setNewPassword('')
-        } else if (response.status === 400) {
+        } else if (response.status === 400) { // Error handling using status to display error message
           setStatus(2)
         } else if (response.status === 401 || response.status === 403) {
           AsyncStorage.removeItem('token')
-          AsyncStorage.removeItem('id')
+          AsyncStorage.removeItem('id') // Will log user out if a valid token is not present
           navigation.navigate('Login')
         } else {
           setStatus(4)
@@ -119,7 +119,7 @@ function Account ({ navigation }) {
   }
 
   async function getData () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID, {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID, { // GET /user/{user_id} Endpoint
       method: 'GET',
       headers: {
         'X-Authorization': token
@@ -128,23 +128,23 @@ function Account ({ navigation }) {
     if (response.status === 200) {
       const body = await response.json()
       setFirstName(body.first_name)
-      setSecondName(body.last_name)
+      setSecondName(body.last_name) // converts the HTML response to JSON and then sets name states
       setEmail(body.email)
       setLoaded(true)
     }
-    const imageResponse = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', {
+    const imageResponse = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', { // GET /user/{user_id}/photo Endpoint
       method: 'GET',
       headers: {
         'X-Authorization': token
       }
     })
     if (imageResponse.status === 200) {
-      const body = await imageResponse.blob()
+      const body = await imageResponse.blob() // converts image to blob and sets phoot state to link for the blob
       setPhoto(URL.createObjectURL(body))
     }
   }
 
-  function warning () {
+  function warning () { // function that returns an error message to be displayed based on the 'status' state altered in other functions
     if (status === 3) {
       return (
         <Text>Success! Details updated</Text>

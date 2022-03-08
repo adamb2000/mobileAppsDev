@@ -60,13 +60,13 @@ function Requests ({ navigation }) {
     return (
       <View>
         <View><Text>Loading</Text></View>
-        <View><Text>{warning}</Text></View>
+        <View><Text>{warning()}</Text></View>
       </View>
     )
   }
 
   async function getRequests () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/friendrequests', {
+    const response = await fetch('http://localhost:3333/api/1.0.0/friendrequests', { // GET /friendrequests Endpoint
       method: 'GET',
       headers: {
         'X-Authorization': token
@@ -74,69 +74,69 @@ function Requests ({ navigation }) {
     })
     if (response.status === 200) {
       const body = await response.json()
-      if (body.length > 0) {
+      if (body.length > 0) { // if there is a successful request but no data, show second render without the flatlist
         for (let i = 0; i < body.length; i++) {
           const key = body[i].user_id
           const fName = body[i].first_name
-          const sName = body[i].last_name
+          const sName = body[i].last_name // using for loop to sort JSON data into an array for each result, to be displayed in flatlist
           const email = body[i].email
           setDataArray(old => [...old, { key, fName, sName, email }])
         }
         setLoaded(3)
-        setRefresh(!refresh)
+        setRefresh(!refresh) // refrest flatlist after new data has been loaded into dataArray State
       } else {
         setLoaded(2)
       }
       setStatus(0)
     } else if (status === 401) {
-      AsyncStorage.removeItem('token')
+      AsyncStorage.removeItem('token') // log user out if a valid toke is not present
       AsyncStorage.removeItem('id')
       navigation.navigate('Login')
     } else {
-      setStatus(1)
+      setStatus(1) // Show error is there is a bad server request
     }
   }
 
   async function acceptRequest (key) {
-    const response = await fetch('http://localhost:3333/api/1.0.0/friendrequests/' + key, {
+    const response = await fetch('http://localhost:3333/api/1.0.0/friendrequests/' + key, { // POST /friendrequests/{user_id} Endpoint
       method: 'POST',
       headers: {
         'X-Authorization': token
       }
     })
     if (response.status === 200) {
-      getRequests()
+      getRequests() // if POST request is successful, get a new, updated list of requests
       setStatus(0)
     } else if (response.status === 401) {
-      AsyncStorage.removeItem('token')
+      AsyncStorage.removeItem('token') // log user out if a valid toke is not present
       AsyncStorage.removeItem('id')
       navigation.navigate('Login')
     } else {
-      setStatus(1)
+      setStatus(1) // Show error is there is a bad server request
     }
   }
 
   async function declineRequest (key) {
-    const response = await fetch('http://localhost:3333/api/1.0.0/friendrequests/' + key, {
+    const response = await fetch('http://localhost:3333/api/1.0.0/friendrequests/' + key, { // DELETE /friendrequests/{user_id} Endpoint
       method: 'DELETE',
       headers: {
         'X-Authorization': token
       }
     })
     if (response.status === 200) {
-      getRequests()
+      getRequests() // if DELETE request is successful, get a new, updated list of requests
       setStatus(0)
     } else if (response.status === 401) {
-      AsyncStorage.removeItem('token')
+      AsyncStorage.removeItem('token') // log user out if a valid toke is not present
       AsyncStorage.removeItem('id')
       navigation.navigate('Login')
     } else {
-      setStatus(1)
+      setStatus(1) // Show error is there is a bad server request
     }
   }
 
   function warning () {
-    if (status === 1) {
+    if (status === 1) { // function that returns a warning to be displayed on screen
       return (
         <View>
           <Text style={{ fontSize: 20, color: 'green' }}>Server Error, please try again</Text>

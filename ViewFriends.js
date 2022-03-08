@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 function Search ({ route, navigation }) {
   const [token, setToken] = useState('')
-  const [loaded, setLoaded] = useState(1)
+  const [loaded, setLoaded] = useState(1) // loaded initally set to 1 to show 'loading' page
   const [dataArray, setDataArray] = useState([])
 
   const [firstName, setFirstName] = useState('')
@@ -14,7 +14,7 @@ function Search ({ route, navigation }) {
   useEffect(() => {
     if (token !== '') {
       getFriends()
-      getUserData()
+      getUserData() // Usestate used to only run code once token has been retireved from async storage
     } else {
       AsyncStorage.getItem('token').then((value) => setToken(value))
     }
@@ -60,14 +60,14 @@ function Search ({ route, navigation }) {
   }
 
   async function getUserData () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID, {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID, { // GET /user/{user_id} Endpoint
       method: 'GET',
       headers: {
         'X-Authorization': token
       }
     })
-    if (response.status === 200) {
-      const body = await response.json()
+    if (response.status === 200) { // Error handling, will set name to 'error' if it cannot get a good response from server
+      const body = await response.json() // converts the HTML response to JSON and then sets name states
       setFirstName(body.first_name)
       setSecondName(body.last_name)
     } else {
@@ -77,34 +77,34 @@ function Search ({ route, navigation }) {
   }
 
   async function getFriends () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/friends', {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/friends', { // GET /user/{user_id}/friends Endpoint
       method: 'GET',
       headers: {
         'X-Authorization': token
       }
     })
     if (response.status === 200) {
-      const body = await response.json()
+      const body = await response.json() // converts the HTML response to JSON to use in for loop
       if (body.length > 0) {
         setDataArray([])
         for (let i = 0; i < body.length; i++) {
           const key = body[i].user_id
-          const fName = body[i].user_givenname
+          const fName = body[i].user_givenname // loop used store friend data in array from the HTML response
           const sName = body[i].user_familyname
           const email = body[i].user_email
           setDataArray(old => [...old, { key, fName, sName, email }])
-        }
-        setLoaded(3)
+        } // loaded state changed depending on if there any friends or if the server request failed
+        setLoaded(3) // shows render with flat list
       } else {
-        setLoaded(2)
+        setLoaded(2) // shows render without flatlist
       }
     } else {
-      setLoaded(1)
+      setLoaded(1) // shows loading screen
     }
   }
 
   function navigateUser (newUserID) {
-    navigation.navigate('User', { newUserID })
+    navigation.navigate('User', { newUserID }) // function used to change variable name and naviagte to seperate page
   }
 }
 

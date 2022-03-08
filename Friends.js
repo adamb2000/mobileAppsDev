@@ -81,24 +81,24 @@ function Friends ({ navigation }) {
   }
 
   async function getRequests () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/friendrequests', {
+    const response = await fetch('http://localhost:3333/api/1.0.0/friendrequests', { // GET /friendrequests Endpoint
       method: 'GET',
       headers: {
         'X-Authorization': token
       }
     })
     if (response.status === 200) {
-      const body = await response.json()
+      const body = await response.json() // function used to get the amount of outstanding friend requests to display at the top of friends screen
       setRequests(body.length)
     }
   }
 
   function navigateUser (userID) {
-    navigation.navigate('User', { userID })
+    navigation.navigate('User', { userID }) // used to navigate to a user page when they are clicked on
   }
 
   async function getFriends () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/search?search_in=friends&limit=20&offset=0&q=' + search, {
+    const response = await fetch('http://localhost:3333/api/1.0.0/search?search_in=friends&limit=20&offset=0&q=' + search, { // GET /search Endpoint       this endpoint is used here as an easy way to search through the friends list (search_in=friends)
       method: 'GET',
       headers: {
         'X-Authorization': token

@@ -15,13 +15,13 @@ function TakePhoto ({ navigation }) {
   useEffect(async () => {
     AsyncStorage.getItem('id').then((value) => setID(value))
     AsyncStorage.getItem('token').then((value) => setToken(value))
-    const status = await Camera.requestCameraPermissionsAsync()
+    const status = await Camera.requestCameraPermissionsAsync() // have to request access to the camera before it can be used
     setHasPermission(status.status)
   }, [])
 
   useEffect(() => {
     console.log(hasPermission)
-    if (hasPermission === 'granted') {
+    if (hasPermission === 'granted') { // only show loaded render when camera permission has been granted
       setLoaded(true)
     }
   }, [hasPermission])
@@ -47,11 +47,10 @@ function TakePhoto ({ navigation }) {
   async function sendToServer (data) {
     const capture = await fetch(data.base64)
     const blob = await capture.blob()
-
-    const response = fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', {
+    const response = fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', { // POST /user/{user_id}/photo
       method: 'POST',
       headers: {
-        'Content-Type': 'image/png',
+        'Content-Type': 'image/png', // change type to image
         'X-Authorization': token
       },
       body: blob
@@ -61,7 +60,7 @@ function TakePhoto ({ navigation }) {
 
   async function capturePhoto () {
     if (cameraRef) {
-      const options = { quality: 0.5, base64: true, onPictureSaved: (data) => sendToServer(data) }
+      const options = { quality: 0.5, base64: true, onPictureSaved: (data) => sendToServer(data) } // capture the photo with specified options and then run sendToServer function with the newly taken photo
       const photo = await cameraRef.takePictureAsync(options)
       console.log('photo', photo)
     }

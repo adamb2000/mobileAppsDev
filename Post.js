@@ -60,20 +60,20 @@ function Post ({ route, navigation }) {
   }
 
   async function getPostData () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, { // GET /user/{user_id}/post Endpoint
       method: 'GET',
       headers: {
         'X-Authorization': token
       }
     })
-    if (response.status === 200) {
+    if (response.status === 200) { // Error handling, will only show flatlist render is valid data is returned from server
       const body = await response.json()
       setDataArray([])
       const key = body.post_id
       const text = body.text
       let time = new Date(body.timestamp)
-      time = time.toLocaleString()
-      const likes = body.numLikes
+      time = time.toLocaleString() // date formatted in user readable format
+      const likes = body.numLikes // all data for a post is turned into an object and put into dataArray
       const fName = body.author.first_name
       const sName = body.author.last_name
       const userEmail = body.author.email
@@ -87,7 +87,7 @@ function Post ({ route, navigation }) {
 
   async function updatePost () {
     if (newPostData !== '') {
-      const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, {
+      const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, { // PATCH /user/{user_id}/post/{post_id} Endpoint
         method: 'PATCH',
         headers: {
           'content-type': 'application/json',
@@ -97,13 +97,13 @@ function Post ({ route, navigation }) {
           text: newPostData
         })
       })
-      if (response.status === 200) {
+      if (response.status === 200) { // Error handling, will navigate back to previous page is post is updated succesfully
         navigation.goBack()
-      } else if (response.status === 400 || response.status === 404) {
+      } else if (response.status === 400 || response.status === 404) { // sets status text depending on response from server
         setStatus(1)
       } else if (response.status === 401) {
         AsyncStorage.removeItem('token')
-        AsyncStorage.removeItem('id')
+        AsyncStorage.removeItem('id') // logs user out if a valid token is not present
         navigation.navigate('Login')
       } else if (response.status === 403) {
         setStatus(2)
@@ -116,15 +116,15 @@ function Post ({ route, navigation }) {
   }
 
   async function deletePost () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + userID + '/post/' + postID, { // DELETE /user/{user_id}/post/{post_id} Endpoint
       method: 'DELETE',
       headers: {
         'X-Authorization': token
       }
     })
     if (response.status === 200) {
-      navigation.goBack()
-    } else if (response.status === 400 || response.status === 404) {
+      navigation.goBack() // will navigate back to previous screen if post is successfully updated
+    } else if (response.status === 400 || response.status === 404) { // error handling depending on response from server
       setStatus(1)
     } else if (response.status === 401) {
       AsyncStorage.removeItem('token')
@@ -138,7 +138,7 @@ function Post ({ route, navigation }) {
   }
 
   function warning () {
-    if (status === 1) {
+    if (status === 1) { // function that sets the warning text on the screen depending on the status set in other functions
       return (
         <View>
           <Text style={{ fontSize: 20, color: 'green' }}>Bad Request - Post may no longer exist</Text>

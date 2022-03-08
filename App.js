@@ -12,7 +12,7 @@ import Search from './Search.js'
 import Account from './Account.js'
 import LogOut from './LogOut.js'
 import User from './User.js'
-import Post from './Post.js'
+import Post from './Post.js' // All Pages in the app are imported here
 import Requests from './Requests.js'
 import TakePhoto from './TakePhoto.js'
 import ViewFriends from './ViewFriends.js'
@@ -24,10 +24,20 @@ const friendsImage = require('./friends.png')
 const searchImage = require('./search.png')
 
 const Stack = createNativeStackNavigator()
-const Tab = createBottomTabNavigator()
+const Tab = createBottomTabNavigator() // Uses 3 different types of navigators - nested
 const Drawer = createDrawerNavigator()
 
 function App () {
+  const schedule = require('node-schedule')
+  const date = new Date(2022, 2, 7, 22, 54, 0)
+  const job = schedule.scheduleJob(date, function () {
+    console.log('The answer to life, the universe, and everything!')
+  })
+  const date2 = new Date(2022, 2, 7, 22, 55, 0)
+  const job2 = schedule.scheduleJob(date2, function () {
+    console.log('The answer to life, the universe, and everything2!')
+  })
+
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>

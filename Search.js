@@ -15,7 +15,7 @@ function Search ({ navigation }) {
       getSearchData()
     } else {
       AsyncStorage.getItem('id').then((value) => setID(value))
-      AsyncStorage.getItem('token').then((value) => setToken(value))
+      AsyncStorage.getItem('token').then((value) => setToken(value)) // Usestate used to only run code once token has been retireved from async storage
     }
   }, [token])
 
@@ -70,20 +70,20 @@ function Search ({ navigation }) {
   }
 
   async function getSearchData () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/search?search_in=all&limit=20&offset=0&q=' + search, {
+    const response = await fetch('http://localhost:3333/api/1.0.0/search?search_in=all&limit=20&offset=0&q=' + search, { // GET /search Endpoint
       method: 'GET',
       headers: {
         'X-Authorization': token
       }
     })
-    if (response.status === 200) {
-      const body = await response.json()
+    if (response.status === 200) { // only display results is a valid response is sent back from server
+      const body = await response.json() // HTTP response changed into JSON
       if (body.length > 0) {
         setDataArray([])
         for (let i = 0; i < body.length; i++) {
           if (body[i].user_id !== parseInt(ID)) {
             const key = body[i].user_id
-            const fName = body[i].user_givenname
+            const fName = body[i].user_givenname // using for loop to sort JSON data into an array for each result, to be displayed in flatlist
             const sName = body[i].user_familyname
             const email = body[i].user_email
             setDataArray(old => [...old, { key, fName, sName, email }])
@@ -92,7 +92,7 @@ function Search ({ navigation }) {
         setLoaded(3)
         setRefresh(!refresh)
       } else {
-        setLoaded(2)
+        setLoaded(2) // display render without flatlist is there are 0 search results
       }
     } else {
       setLoaded(1)
@@ -100,7 +100,7 @@ function Search ({ navigation }) {
   }
 
   function navigateUser (userID) {
-    navigation.navigate('User', { userID })
+    navigation.navigate('User', { userID }) // if a user is clicked on, navigate to their user page
   }
 }
 

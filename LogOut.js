@@ -13,15 +13,15 @@ function LogOut ({ navigation }) {
 
   async function DoLogOut () {
     const token = await AsyncStorage.getItem('token')
-    fetch('http://localhost:3333/api/1.0.0/logout', {
+    fetch('http://localhost:3333/api/1.0.0/logout', { // POST /logout Endpoint
       method: 'POST',
       headers: {
         'X-Authorization': token
       }
     })
-    AsyncStorage.removeItem('token')
+    AsyncStorage.removeItem('token') // remove token and ID from storage so the program knows there is no longer a user logged in
     AsyncStorage.removeItem('id')
-    navigation.navigate('Login')
+    navigation.navigate('Login') // send user back to login screen
   }
 }
 

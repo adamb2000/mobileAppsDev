@@ -10,7 +10,7 @@ function SignUp ({ navigation }) {
 
   const [unsuccessful, setUnsuccessful] = useState(0)
   const [input1, setInput1] = useState('')
-  const [input2, setInput2] = useState('')
+  const [input2, setInput2] = useState('') // input references so they can be cleared using imput.clear()
   const [input3, setInput3] = useState('')
   const [input4, setInput4] = useState('')
 
@@ -45,7 +45,7 @@ function SignUp ({ navigation }) {
   )
 
   async function newUserApiCall () {
-    if (firstName !== '' && secondName !== '' && email !== '' && password !== '') {
+    if (firstName !== '' && secondName !== '' && email !== '' && password !== '') { // POST /user Endpoint
       if (password.length > 5) {
         const response = await fetch('http://localhost:3333/api/1.0.0/user', {
           method: 'POST',
@@ -54,7 +54,7 @@ function SignUp ({ navigation }) {
           },
           body: JSON.stringify({
             first_name: firstName,
-            last_name: secondName,
+            last_name: secondName, // stringifys all of the new data to send to server in request body
             email: email,
             password: password
           })
@@ -62,14 +62,14 @@ function SignUp ({ navigation }) {
         if (response.status === 201) {
           setUnsuccessful(1)
           input1.clear()
-          input2.clear()
+          input2.clear() // if request was successful clear all of the inputs and display message to user
           input3.clear()
           input4.clear()
           setFirstName('')
           setSecondName('')
           setEmail('')
           setPassword('')
-        } else if (response.status === 400) {
+        } else if (response.status === 400) { // error handling, using body of the response from server to determine why request was unsuccessful
           const responseBody = await response.text()
           if (responseBody === 'Bad Request - body must match specification and email must be correct') {
             setUnsuccessful(5)
@@ -92,7 +92,7 @@ function SignUp ({ navigation }) {
   }
 
   function warning () {
-    if (unsuccessful === 1) {
+    if (unsuccessful === 1) { // function that returns text and displays why request was unsuccessful or if signup was successful.
       return (
         <View>
           <Text style={{ fontSize: 20, color: 'green' }}>Success! Account Created</Text>

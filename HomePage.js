@@ -16,10 +16,10 @@ function HomePage ({ navigation }) {
   const [input1, setInput1] = useState('')
   const [placeholder, setPlaceholder] = useState('Post')
 
-  useEffect(() => {
+  useEffect(() => { // Usestate used to only run code once token has been retireved from async storage
     if (token !== '') {
       getUserData()
-      const Subscription = navigation.addListener('focus', () => {
+      const Subscription = navigation.addListener('focus', () => { // subscription used to refresh page when user navigates back here
         getUserData()
       })
       return Subscription
@@ -101,48 +101,48 @@ function HomePage ({ navigation }) {
   }
 
   async function getUserData () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID, {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID, { // GET /user/{user_id} Endpoint
       method: 'GET',
       headers: {
         'X-Authorization': token
       }
     })
-    if (response.status === 200) {
-      const body = await response.json()
+    if (response.status === 200) { // Error handling
+      const body = await response.json() // converts the HTML response to JSON and then sets name states
       setFirstName(body.first_name)
       setSecondName(body.last_name)
     } else if (response.status === 401) {
       AsyncStorage.removeItem('token')
-      AsyncStorage.removeItem('id')
+      AsyncStorage.removeItem('id') // Will log user out if a valid token is not present
       navigation.navigate('Login')
     } else if (response.status === 404) {
       setLoaded(1)
-      setError('Error - User Not Found')
+      setError('Error - User Not Found') // uses 'Error' state to display error message on screen to user
     } else if (response.status === 500) {
       setLoaded(1)
       setError('Server Error')
     }
-    const imageResponse = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', {
+    const imageResponse = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/photo', { // GET /user/{user_id}/photo Endpoint
       method: 'GET',
       headers: {
         'X-Authorization': token
       }
     })
     if (imageResponse.status === 200) {
-      const body = await imageResponse.blob()
+      const body = await imageResponse.blob() // converts image to blob and sets phoot state to link for the blob
       setPhoto(URL.createObjectURL(body))
     }
     getPostData()
   }
 
   async function getPostData () {
-    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post', {
+    const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post', { // GET /user/{user_id}/post
       method: 'GET',
       headers: {
         'X-Authorization': token
       }
     })
-    if (response.status === 200) {
+    if (response.status === 200) { // Error handling, will only show flatlist render if valid data is returned from server
       const body = await response.json()
       if (body.length > 0) {
         setDataArray([])
@@ -150,8 +150,8 @@ function HomePage ({ navigation }) {
           const key = body[i].post_id
           const text = body[i].text
           let time = new Date(body[i].timestamp)
-          time = time.toLocaleString()
-          const likes = body[i].numLikes
+          time = time.toLocaleString() // date formatted in user readable format
+          const likes = body[i].numLikes // all data for a post is turned into an object and put into dataArray
           const fName = body[i].author.first_name
           const sName = body[i].author.last_name
           const userID = body[i].author.user_id
@@ -159,38 +159,38 @@ function HomePage ({ navigation }) {
         }
         setLoaded(3)
       } else {
-        setLoaded(2)
+        setLoaded(2) // if response is valid but no posts are present, show second render
       }
-    } else if (response.status === 401) {
+    } else if (response.status === 401) { // log user out if a valid toke is not present
       AsyncStorage.removeItem('token')
       AsyncStorage.removeItem('id')
       navigation.navigate('Login')
     } else if (response.status === 500) {
       setLoaded(1)
-      setError('Server Error ')
+      setError('Server Error ') // show error messages if errors occur
     }
-    setRefresh(!refresh)
+    setRefresh(!refresh) // variable in flatlist that allows the list to refresh when this state is changed
   }
 
   async function sendNewPostData () {
-    if (newPostData !== '') {
-      const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post', {
+    if (newPostData !== '') { // cannnot submit an empty post
+      const response = await fetch('http://localhost:3333/api/1.0.0/user/' + ID + '/post', { // POST /user/{user_id}/post Endpoint
         method: 'POST',
         headers: {
           'content-type': 'application/json',
           'X-Authorization': token
         },
         body: JSON.stringify({
-          text: newPostData
+          text: newPostData // stringifys the new data to send to server in request body
         })
       })
       if (response.status === 201) {
-        setPlaceholder('Post')
+        setPlaceholder('Post') // retuinrs plceholder to 'post' if the new post was successfullly submitted as it couldve been changed in the error handling
         input1.clear()
-        setNewPostData('')
-        getPostData()
+        setNewPostData('') // clear the input and the state containing the inputs value
+        getPostData() // get the post data again containing the newly submitted post
       } else if (response.status === 500) {
-        setPlaceholder('Server Error')
+        setPlaceholder('Server Error') // show error messages if the request was not successful
       }
     } else {
       setPlaceholder('Cannot Submit Empty Post')
@@ -198,11 +198,11 @@ function HomePage ({ navigation }) {
   }
 
   function navigateDraft (UserID) {
-    navigation.navigate('Drafts', { firstName, secondName, UserID, newPostData })
+    navigation.navigate('Drafts', { firstName, secondName, UserID, newPostData }) // navigate to draft page with all into needed
   }
 
   function getButtons (item) {
-    if (item.userID === parseInt(ID)) {
+    if (item.userID === parseInt(ID)) { // returns the like button if it is not your own post
       return (
         <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { editPost(item.key) }}>
           <Text style={styles.buttonText}>Edit</Text>
@@ -213,7 +213,7 @@ function HomePage ({ navigation }) {
 
   function editPost (postID) {
     const UserID = ID
-    navigation.navigate('Post', { postID, UserID })
+    navigation.navigate('Post', { postID, UserID }) // navigate to editpost page with details for this specific post
   }
 }
 

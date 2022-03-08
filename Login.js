@@ -9,13 +9,13 @@ function Login ({ navigation }) {
 
   const [unsuccessful, setUnsuccessful] = useState(0)
   const [input1, setInput1] = useState('')
-  const [input2, setInput2] = useState('')
+  const [input2, setInput2] = useState('') // input references so they can be cleared using imput.clear()
 
   useEffect(async () => {
     const id = await AsyncStorage.getItem('id')
     const token = await AsyncStorage.getItem('id')
     if (token || id) {
-      AsyncStorage.removeItem('token')
+      AsyncStorage.removeItem('token') // removes any tokens or ID that are saved into storage (from a previous session without logging out properly)
       AsyncStorage.removeItem('id')
     }
   }, [])
@@ -50,19 +50,19 @@ function Login ({ navigation }) {
 
   async function loginApiCall () {
     if (email !== '' && password !== '') {
-      const response = await fetch('http://localhost:3333/api/1.0.0/login', {
+      const response = await fetch('http://localhost:3333/api/1.0.0/login', { // POST /login Endpoint
         method: 'POST',
         headers: {
           'content-type': 'application/json'
         },
         body: JSON.stringify({
           email: email,
-          password: password
+          password: password // stringifys the email and password to send in the body of the request
         })
       })
       if (response.status === 200) {
-        setUnsuccessful(0)
-        const body = await response.json()
+        setUnsuccessful(0) //
+        const body = await response.json() // if request is successful, get ID and token from response and save to async storage
         try {
           await AsyncStorage.setItem('token', body.token)
           await AsyncStorage.setItem('id', body.id)
@@ -71,14 +71,14 @@ function Login ({ navigation }) {
           console.log('error', e)
         }
         input1.clear()
-        input2.clear()
+        input2.clear() // clear all input boxes if login is successful
         setEmail('')
         setPassword('')
-        navigation.navigate('LoggedIn')
+        navigation.navigate('LoggedIn') // navigate to loggedIn which is a tab navigator with a drawer navigator nested inside
         // console.log(body.token)
         // console.log(body.id)
       } else if (response.status === 400) {
-        setUnsuccessful(1)
+        setUnsuccessful(1) // if login is not successful, display message to user explaining why
       } else {
         setUnsuccessful(2)
       }
@@ -87,7 +87,7 @@ function Login ({ navigation }) {
     }
   }
 
-  function warning () {
+  function warning () { // function retunrs text explaining why login was not successful
     if (unsuccessful === 1) {
       return (
         <View>

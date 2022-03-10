@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import React, { Image } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import HomePage from './HomePage.js'
 import Login from './Login.js'
@@ -27,17 +28,12 @@ const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator() // Uses 3 different types of navigators - nested
 const Drawer = createDrawerNavigator()
 
+global.activeDrafts = []
+// const schedule = require('node-schedule');
+
 function App () {
   const schedule = require('node-schedule')
-  const date = new Date(2022, 2, 7, 22, 54, 0)
-  const job = schedule.scheduleJob(date, function () {
-    console.log('The answer to life, the universe, and everything!')
-  })
-  const date2 = new Date(2022, 2, 7, 22, 55, 0)
-  const job2 = schedule.scheduleJob(date2, function () {
-    console.log('The answer to life, the universe, and everything2!')
-  })
-
+  checkScheduled()
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -54,6 +50,91 @@ function App () {
       </Stack.Navigator>
     </NavigationContainer>
   )
+
+  async function checkScheduled () {
+    const bodyStr = await AsyncStorage.getItem('scheduledPosts')
+    const body = await JSON.parse(bodyStr)
+    console.log(body)
+    if (body) {
+      console.log(body.length)
+      if (body.length > 0) {
+        for (let i = 0; i < body.length; i++) {
+          const draftObject = body[i]
+          const now = new Date(Date.now())
+          const date = new Date(draftObject.date)
+          if (date < now) {
+            const newDate = new Date(Date.now)
+            newDate.setSeconds(newDate.getSeconds() + 1)
+            draftObject.date = newDate
+          }
+          const job = schedule.scheduleJob(draftObject.date, async function () {
+            const draftsStr = await AsyncStorage.getItem(draftObject.location)
+            const draftsJSON = await JSON.parse(draftsStr)
+            const draft = draftsJSON.filter(item => item.draftID === draftObject.draftID)
+            const response = await fetch('http://localhost:3333/api/1.0.0/login', { // POST /login Endpoint
+              method: 'POST',
+              headers: {
+                'content-type': 'application/json'
+              },
+              body: JSON.stringify({
+                email: draftObject.email,
+                password: draftObject.password // stringifys the email and password to send in the body of the request
+              })
+            })
+            if (response.status === 200) {
+              const body = await response.json()
+              const response2 = await fetch('http://localhost:3333/api/1.0.0/user/' + draftObject.userID + '/post', { // POST /user/{user_id}/post Endpoint
+                method: 'POST',
+                headers: {
+                  'content-type': 'application/json',
+                  'X-Authorization': body.token
+                },
+                body: JSON.stringify({ // stringify the new post data in the body of the request
+                  text: draft[0].text
+                })
+              })
+              if (response2.status === 201) {
+                console.log(201)
+                const removed = draftsJSON.filter(item => item.draftID !== draftObject.draftID)
+                AsyncStorage.setItem(draftObject.location, JSON.stringify(removed))
+              } else {
+                for (let i = 0; i < draftsJSON.length; i++) {
+                  if (draftsJSON[i].draftID === draftObject.draftID) {
+                    draftsJSON[i].scheduled = 'Error'
+                    draftsJSON[i].scheduleTime = ''
+                  }
+                }
+                AsyncStorage.setItem(draftObject.location, JSON.stringify(draftsJSON))
+              }
+            } else {
+              for (let i = 0; i < draftsJSON.length; i++) {
+                if (draftsJSON[i].draftID === draftObject.draftID) {
+                  draftsJSON[i].scheduled = 'Error'
+                  draftsJSON[i].scheduleTime = ''
+                }
+              }
+              AsyncStorage.setItem(draftObject.location, JSON.stringify(draftsJSON))
+            }
+            const bodyStr = await AsyncStorage.getItem('scheduledPosts')
+            const body = await JSON.parse(bodyStr)
+            if (body.length > 1) {
+              const removed = body.filter(item => item.scheduleID !== draftObject.scheduleID)
+              AsyncStorage.setItem('scheduledPosts', JSON.stringify(removed))
+            } else {
+              AsyncStorage.removeItem('scheduledPosts')
+            }
+            const temp = global.activeDrafts
+            const removed = temp.filter(item => item.id !== draftObject.scheduleID)
+            global.activeDrafts = removed
+          })
+          const temp = global.activeDrafts
+          const object = { id: draftObject.scheduleID, schJob: job }
+          temp.push(object)
+          global.activeDrafts = temp
+        }
+      }
+    }
+  }
 }
 
 function LoggedIn () {

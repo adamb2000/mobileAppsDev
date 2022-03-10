@@ -58,11 +58,8 @@ function Drafts ({ route, navigation }) {
                 <Text style={styles.listTextName}>{getDate(item.timeStamp)}</Text>
                 <Text style={styles.listText}>{item.text}</Text>
                 <View style={styles.listButtonView}>
-                  <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { postDraft(item.draftID, item.text) }}>
+                  <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { postDraft(item.draftID, item.text, item.scheduled) }}>
                     <Text style={styles.buttonText}>Post Draft</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { deleteDraft(item.draftID) }}>
-                    <Text style={styles.buttonText}>Delete Draft</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.listTouchableOpacity} onPress={() => { navigation.navigate('EditDrafts', { ID: ID, UserID: UserID, draftID: item.draftID }) }}>
                     <Text style={styles.buttonText}>Edit Draft</Text>
@@ -124,7 +121,7 @@ function Drafts ({ route, navigation }) {
         const object = await JSON.parse(oldData) // turn the string in storage into JSON object
         if (object.length > 0) { // if storage is there but no drafts are in it, make a new storage instead
           const newID = (object[object.length - 1].draftID) + 1 // create an object with ID 1 bigger than the current biggest ID to avoid duplicate IDs
-          object.push({ draftID: newID, text: newPostData, timeStamp: time, scheduled: 'False', scheduleTime: null }) // push the newly created object into the object array and save the whole thing back into storage under the same async storage ID
+          object.push({ draftID: newID, text: newPostData, timeStamp: time, scheduled: 'False', scheduleTime: '' }) // push the newly created object into the object array and save the whole thing back into storage under the same async storage ID
           await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(object))
           setDataArray(object) // update the data array and refresh the flatlist
           setRefresh(!refresh)
@@ -135,7 +132,7 @@ function Drafts ({ route, navigation }) {
         newDraftStorage()
       }
       async function newDraftStorage () {
-        const objectArray = [{ draftID: 1, text: newPostData, timeStamp: time, scheduled: 'False', scheduleTime: null }] // create a new object array with ID starting at 1 and save to storage
+        const objectArray = [{ draftID: 1, text: newPostData, timeStamp: time, scheduled: 'False', scheduleTime: '' }] // create a new object array with ID starting at 1 and save to storage
         await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(objectArray))
         setDataArray(objectArray) // update the data array and refresh the flatlist
         setRefresh(!refresh)
@@ -149,7 +146,7 @@ function Drafts ({ route, navigation }) {
     }
   }
 
-  async function postDraft (key, text) {
+  async function postDraft (key, text, scheduled) {
     setPlaceholder('Post') // reset the placeholder
     const response = await fetch('http://localhost:3333/api/1.0.0/user/' + UserID + '/post', { // POST /user/{user_id}/post Endpoint
       method: 'POST',
@@ -162,18 +159,38 @@ function Drafts ({ route, navigation }) {
       })
     })
     if (response.status === 201) {
-      deleteDraft(key) // if successful delete the draft from storage
+      deleteDraft(key, scheduled) // if successful delete the draft from storage
     } else if (response.status === 401) {
       navigation.navigate('HomePage') // if these is an error, revert back to homepage to avoid messing up async storage
     }
   }
 
-  async function deleteDraft (key) { // only key is passed in (draft ID) as it is unique to find specific draft
+  async function deleteDraft (key, scheduled) { // only key is passed in (draft ID) as it is unique to find specific draft
+    if (scheduled === 'True') {
+      const ScheduleID = ID + '_' + UserID + '_' + key
+      const temp = global.activeDrafts
+      for (let i = 0; i < temp.length; i++) {
+        if (temp[i].id === ScheduleID) {
+          const tempJob = temp[i].schJob
+          tempJob.cancel()
+          temp.splice(i, 1)
+        }
+      }
+      global.activeDrafts = temp
+      const bodyStr = await AsyncStorage.getItem('scheduledPosts')
+      const body = await JSON.parse(bodyStr)
+      if (body.length > 1) {
+        const removed = body.filter(item => item.scheduleID !== ScheduleID)
+        AsyncStorage.setItem('scheduledPosts', JSON.stringify(removed))
+      } else {
+        AsyncStorage.removeItem('scheduledPosts')
+      }
+    }
     const oldData = await AsyncStorage.getItem(ID + '_' + UserID + '_' + 'drafts')
     const object = await JSON.parse(oldData)
     const result = object.filter(item => item.draftID !== key) // get drafts out of storage and filter out the draft with 'key' draft ID
     await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(result)) // save the new array back into storage, object has to be in string format to be saved into async storage
-    getDraftData() // get draft data again to update flatlist
+    getDraftData()
   }
 
   function getDate (timestamp) {

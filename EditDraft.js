@@ -12,7 +12,7 @@ function EditDraft ({ route, navigation }) {
   const ID = route.params.ID
   const UserID = route.params.UserID
   const DraftID = route.params.draftID
-  const dateTimeKey = /((([0][1-9])|([1-2]\d)|([3][0-1]))-(([0][1-9])|([1][1-2]))-\d{4} (([0-1]\d)|([2][0-3])):[0-5]\d:[0-5]\d)/
+  const dateTimeKey = /((([0][1-9])|([1-2]\d)|([3][0-1]))-(([0][1-9])|([1][0-2]))-\d{4} (([0-1]\d)|([2][0-3])):[0-5]\d:[0-5]\d)/
 
   // Drafts are saved in the format of ID and UserID (ID being the logged in user and UserID being the id of the current users page thats being written on)
   // these IDs are put together meaning anyone can save drafts seperately on any users page and they will be accessable even if the app is restarted
@@ -44,6 +44,11 @@ function EditDraft ({ route, navigation }) {
             <View style={styles.detailsContainer}>
               <View style={styles.detailsView}><Text style={styles.detailsField}>Schedule Time: (DD-MM-YYYY hh:mm:ss) </Text></View>
               <View style={styles.detailsView}><TextInput style={styles.dateInput} placeholder="DD-MM-YYYY hh:mm:ss" onChangeText={(value) => setDateTime(value)}/></View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.touchableOpacity} onPress={() => { schedulePost() }}>
+                  <Text style={styles.buttonText}>Schedule Post</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
           <View style={styles.bottomContainer}>
@@ -55,8 +60,8 @@ function EditDraft ({ route, navigation }) {
               <TouchableOpacity style={styles.touchableOpacity} onPress={() => { updateDraft() }}>
                 <Text style={styles.buttonText}>Update Draft</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.touchableOpacity} onPress={() => { schedulePost() }}>
-                <Text style={styles.buttonText}>Schedule Post</Text>
+              <TouchableOpacity style={styles.touchableOpacity} onPress={() => { deleteDraft() }}>
+                <Text style={styles.buttonText}>Delete Draft</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.inputContainer}>
@@ -73,8 +78,12 @@ function EditDraft ({ route, navigation }) {
   }
 
   function getDate (timestamp) {
-    const time = new Date(timestamp) // function that returns the time in a user friendly format
-    return time.toLocaleString()
+    if (timestamp === '') {
+      return ''
+    } else {
+      const time = new Date(timestamp) // function that returns the time in a user friendly format
+      return time.toLocaleString()
+    }
   }
 
   async function getDraftData () {
@@ -109,61 +118,71 @@ function EditDraft ({ route, navigation }) {
   async function schedulePost () {
     const valid = dateTimeKey.test(dateTime)
     if (valid) {
-      const email = await AsyncStorage.getItem('email')
-      const pword = await AsyncStorage.getItem('pword')
-      const response = await fetch('http://localhost:3333/api/1.0.0/login', { // POST /login Endpoint
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: email,
-          password: pword // stringifys the email and password to send in the body of the request
+      const str = dateTime.split(' ')
+      const dateString = str[0].split('-')
+      const timeString = str[1].split(':')
+      const date = new Date(dateString[2], dateString[1] - 1, dateString[0], timeString[0], timeString[1], timeString[2])
+      const nowDate = new Date(Date.now())
+      if (date > nowDate) {
+        const email = await AsyncStorage.getItem('email')
+        const pword = await AsyncStorage.getItem('pword')
+        const response = await fetch('http://localhost:3333/api/1.0.0/login', { // POST /login Endpoint
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email,
+            password: pword // stringifys the email and password to send in the body of the request
+          })
         })
-      })
-      if (response.status === 200) {
-        const scheduledPosts = await AsyncStorage.getItem('scheduledPosts')
-        const str = dateTime.split(' ')
-        const dateString = str[0].split('-')
-        const timeString = str[1].split(':')
-        const date = new Date(dateString[2], dateString[1] - 1, dateString[0], timeString[0], timeString[1], timeString[2])
-        const scheduleID = ID + '_' + UserID + '_' + DraftID
-        const draftLocation = ID + '_' + UserID + '_' + 'drafts'
-        const draftObject = { scheduleID: scheduleID, location: draftLocation, draftID: DraftID, userID: UserID, date: date, email: email, password: pword }
-        if (scheduledPosts) {
-          const body = await JSON.parse(scheduledPosts)
-          if (body.length > 0) {
-            var present = false
-            var index = 0
-            for (let i = 0; i < body.length; i++) {
-              if (body[i].scheduleID === scheduleID) {
-                present = true
-                index = i
+        if (response.status === 200) {
+          const scheduledPosts = await AsyncStorage.getItem('scheduledPosts')
+          // const str = dateTime.split(' ')
+          // const dateString = str[0].split('-')
+          // const timeString = str[1].split(':')
+          // const date = new Date(dateString[2], dateString[1] - 1, dateString[0], timeString[0], timeString[1], timeString[2])
+          const scheduleID = ID + '_' + UserID + '_' + DraftID
+          const draftLocation = ID + '_' + UserID + '_' + 'drafts'
+          const draftObject = { scheduleID: scheduleID, location: draftLocation, draftID: DraftID, userID: UserID, date: date, email: email, password: pword }
+          if (scheduledPosts) {
+            const body = await JSON.parse(scheduledPosts)
+            if (body.length > 0) {
+              var present = false
+              var index = 0
+              for (let i = 0; i < body.length; i++) {
+                if (body[i].scheduleID === scheduleID) {
+                  present = true
+                  index = i
+                }
               }
-            }
-            if (present) {
-              body[index].date = draftObject.date
-              updateDraft('True', draftObject.date)
-              changeSchedule(draftObject)
+              if (present) {
+                body[index].date = draftObject.date
+                updateDraft('True', draftObject.date)
+                changeSchedule(draftObject)
+              } else {
+                body.push(draftObject)
+                updateDraft('True', draftObject.date)
+                setSchedule(draftObject)
+              }
+              AsyncStorage.setItem('scheduledPosts', JSON.stringify(body))
             } else {
-              body.push(draftObject)
-              updateDraft('True', draftObject.date)
-              setSchedule(draftObject)
+              newStorage(draftObject)
             }
-            AsyncStorage.setItem('scheduledPosts', JSON.stringify(body))
           } else {
             newStorage(draftObject)
           }
         } else {
-          newStorage(draftObject)
+          console.log(response.status)
         }
+        async function newStorage (draftObject) {
+          AsyncStorage.setItem('scheduledPosts', JSON.stringify([draftObject]))
+          updateDraft('True', draftObject.date)
+          setSchedule(draftObject)
+        }
+        setStatus(0)
       } else {
-        console.log(response.status)
-      }
-      async function newStorage (draftObject) {
-        AsyncStorage.setItem('scheduledPosts', JSON.stringify([draftObject]))
-        updateDraft('True', draftObject.date)
-        setSchedule(draftObject)
+        setStatus(3)
       }
     } else {
       setStatus(2)
@@ -249,17 +268,51 @@ function EditDraft ({ route, navigation }) {
     setSchedule(draftObject)
   }
 
+  async function deleteDraft () { // only key is passed in (draft ID) as it is unique to find specific draft
+    if (post[0].scheduled === 'True') {
+      const ScheduleID = ID + '_' + UserID + '_' + DraftID
+      const temp = global.activeDrafts
+      for (let i = 0; i < temp.length; i++) {
+        if (temp[i].id === ScheduleID) {
+          const tempJob = temp[i].schJob
+          tempJob.cancel()
+          temp.splice(i, 1)
+        }
+      }
+      global.activeDrafts = temp
+      const bodyStr = await AsyncStorage.getItem('scheduledPosts')
+      const body = await JSON.parse(bodyStr)
+      if (body.length > 1) {
+        const removed = body.filter(item => item.scheduleID !== ScheduleID)
+        AsyncStorage.setItem('scheduledPosts', JSON.stringify(removed))
+      } else {
+        AsyncStorage.removeItem('scheduledPosts')
+      }
+    }
+    const oldData = await AsyncStorage.getItem(ID + '_' + UserID + '_' + 'drafts')
+    const object = await JSON.parse(oldData)
+    const result = object.filter(item => item.draftID !== DraftID) // get drafts out of storage and filter out the draft with 'key' draft ID
+    await AsyncStorage.setItem(ID + '_' + UserID + '_' + 'drafts', JSON.stringify(result)) // save the new array back into storage, object has to be in string format to be saved into async storage
+    navigation.goBack() // draft has been deleted so go back to previous screen
+  }
+
   function warning () { // function returns error message
     if (status === 1) {
       return (
         <View>
-          <Text style={{ fontSize: 20, color: 'red' }}>Cannot Submit empty draft</Text>
+          <Text style={{ fontSize: 10, color: 'red' }}>Cannot Submit empty draft</Text>
         </View>
       )
     } else if (status === 2) {
       return (
         <View>
-          <Text style={{ fontSize: 20, color: 'red' }}>Invalid date, should be in format: DD-MM-YYYY hh:mm:ss</Text>
+          <Text style={{ fontSize: 10, color: 'red' }}>Invalid date, should be in format: DD-MM-YYYY hh:mm:ss</Text>
+        </View>
+      )
+    } else if (status === 3) {
+      return (
+        <View>
+          <Text style={{ fontSize: 10, color: 'red' }}>Date must be in the future</Text>
         </View>
       )
     }
@@ -320,7 +373,9 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flex: 1,
-    flexDirection: 'row'
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   buttonText: {
     color: 'white'

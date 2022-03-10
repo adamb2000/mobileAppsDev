@@ -130,10 +130,8 @@ function EditDraft ({ route, navigation }) {
         const scheduleID = ID + '_' + UserID + '_' + DraftID
         const draftLocation = ID + '_' + UserID + '_' + 'drafts'
         const draftObject = { scheduleID: scheduleID, location: draftLocation, draftID: DraftID, userID: UserID, date: date, email: email, password: pword }
-        console.log(scheduledPosts)
         if (scheduledPosts) {
           const body = await JSON.parse(scheduledPosts)
-          console.log(body)
           if (body.length > 0) {
             var present = false
             var index = 0
@@ -164,6 +162,7 @@ function EditDraft ({ route, navigation }) {
       }
       async function newStorage (draftObject) {
         AsyncStorage.setItem('scheduledPosts', JSON.stringify([draftObject]))
+        updateDraft('True', draftObject.date)
         setSchedule(draftObject)
       }
     } else {
@@ -210,22 +209,44 @@ function EditDraft ({ route, navigation }) {
           }
           AsyncStorage.setItem(draftObject.location, JSON.stringify(draftsJSON))
         }
-        console.log(response2.status)
       } else {
-        console.log(response.status)
+        for (let i = 0; i < draftsJSON.length; i++) {
+          if (draftsJSON[i].draftID === draftObject.draftID) {
+            draftsJSON[i].scheduled = 'Error'
+            draftsJSON[i].scheduleTime = ''
+          }
+        }
+        AsyncStorage.setItem(draftObject.location, JSON.stringify(draftsJSON))
       }
-      // const index = global.activeDrafts.indexOf()
-      // global.activeDrafts.r
+      const bodyStr = await AsyncStorage.getItem('scheduledPosts')
+      const body = await JSON.parse(bodyStr)
+      if (body.length > 1) {
+        const removed = body.filter(item => item.scheduleID !== draftObject.scheduleID)
+        AsyncStorage.setItem('scheduledPosts', JSON.stringify(removed))
+      } else {
+        AsyncStorage.removeItem('scheduledPosts')
+      }
+      const temp = global.activeDrafts
+      const removed = temp.filter(item => item.id !== draftObject.scheduleID)
+      global.activeDrafts = removed
     })
-    // global.activeDrafts.push({draftObject.scheduleID: job})
-    console.log(global.activeDrafts)
+    const temp = global.activeDrafts
+    const object = { id: draftObject.scheduleID, schJob: job }
+    temp.push(object)
+    global.activeDrafts = temp
   }
 
   function changeSchedule (draftObject) {
-    const job = schedule.scheduleJob(draftObject.date, function () {
-      console.log(draftObject.scheduleID)
-    })
-    global.ActivePosts.push(job)
+    const temp = global.activeDrafts
+    for (let i = 0; i < temp.length; i++) {
+      if (temp[i].id === draftObject.scheduleID) {
+        const tempJob = temp[i].schJob
+        tempJob.cancel()
+        temp.splice(i, 1)
+      }
+    }
+    global.activeDrafts = temp
+    setSchedule(draftObject)
   }
 
   function warning () { // function returns error message

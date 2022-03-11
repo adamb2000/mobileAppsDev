@@ -46,8 +46,8 @@ function Friends ({ navigation }) {
             renderItem={({ item }) =>
               <View style={styles.listView}>
                 <TouchableOpacity style={styles.userTouchableOpacity} onPress={() => { navigateUser(item.key) }}>
-                  <Text style={styles.listTextName}>{item.fName} {item.sName}</Text>
-                  <Text style={styles.listText}>{item.email}</Text>
+                  <Text style={styles.listTextName}>{item.email}</Text>
+                  <Text style={styles.listText}>{item.fName} {item.sName}</Text>
                 </TouchableOpacity>
               </View>}
           />

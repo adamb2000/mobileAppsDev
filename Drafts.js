@@ -165,25 +165,25 @@ function Drafts ({ route, navigation }) {
     }
   }
 
-  async function deleteDraft (key, scheduled) { // only key is passed in (draft ID) as it is unique to find specific draft
-    if (scheduled === 'True') {
+  async function deleteDraft (key, scheduled) {
+    if (scheduled === 'True') { // Needs to check if the draft is scheduled before removing post as the schedule will also need to be canceled
       const ScheduleID = ID + '_' + UserID + '_' + key
       const temp = global.activeDrafts
       for (let i = 0; i < temp.length; i++) {
         if (temp[i].id === ScheduleID) {
           const tempJob = temp[i].schJob
           tempJob.cancel()
-          temp.splice(i, 1)
+          temp.splice(i, 1) // if draft has been scheduled, cancel the jon and remove all instances of schedule
         }
       }
-      global.activeDrafts = temp
+      global.activeDrafts = temp // uses global variable to store the schedule jobs so they can be accessed in any page
       const bodyStr = await AsyncStorage.getItem('scheduledPosts')
       const body = await JSON.parse(bodyStr)
-      if (body.length > 1) {
-        const removed = body.filter(item => item.scheduleID !== ScheduleID)
+      if (body.length > 1) { // removing schedule instance from permanent Async Storage
+        const removed = body.filter(item => item.scheduleID !== ScheduleID) // filters out the draft data for the draft that is being deleted
         AsyncStorage.setItem('scheduledPosts', JSON.stringify(removed))
       } else {
-        AsyncStorage.removeItem('scheduledPosts')
+        AsyncStorage.removeItem('scheduledPosts') // if this is the last item in sotrage, just remove the whole storage
       }
     }
     const oldData = await AsyncStorage.getItem(ID + '_' + UserID + '_' + 'drafts')

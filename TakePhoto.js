@@ -8,11 +8,12 @@ function TakePhoto ({ navigation }) {
   const [token, setToken] = useState('')
   const [ID, setID] = useState('')
 
-  const [types, setType] = useState(Camera.Constants.Type.front)
+  const [types, setType] = useState()
   const [hasPermission, setHasPermission] = useState(null)
   const [cameraRef, setCameraRef] = useState('')
 
   useEffect(async () => {
+    setType(Camera.Constants.Type.front)
     AsyncStorage.getItem('id').then((value) => setID(value))
     AsyncStorage.getItem('token').then((value) => setToken(value))
     const status = await Camera.requestCameraPermissionsAsync() // have to request access to the camera before it can be used
@@ -20,7 +21,6 @@ function TakePhoto ({ navigation }) {
   }, [])
 
   useEffect(() => {
-    console.log(hasPermission)
     if (hasPermission === 'granted') { // only show loaded render when camera permission has been granted
       setLoaded(true)
     }

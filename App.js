@@ -29,7 +29,6 @@ const Tab = createBottomTabNavigator() // Uses 3 different types of navigators -
 const Drawer = createDrawerNavigator()
 
 global.activeDrafts = []
-// const schedule = require('node-schedule');
 
 function App () {
   const schedule = require('node-schedule')
@@ -51,12 +50,11 @@ function App () {
     </NavigationContainer>
   )
 
-  async function checkScheduled () {
+  async function checkScheduled () { // Same function as in EditDraft - needs to schedule drafts again when the program is restarted
     const bodyStr = await AsyncStorage.getItem('scheduledPosts')
     const body = await JSON.parse(bodyStr)
     console.log(body)
     if (body) {
-      console.log(body.length)
       if (body.length > 0) {
         for (let i = 0; i < body.length; i++) {
           const draftObject = body[i]
@@ -64,7 +62,7 @@ function App () {
           const date = new Date(draftObject.date)
           if (date < now) {
             const newDate = new Date(Date.now)
-            newDate.setSeconds(newDate.getSeconds() + 1)
+            newDate.setSeconds(newDate.getSeconds() + 1) // if scheduled date is now in the past, upload the post now
             draftObject.date = newDate
           }
           const job = schedule.scheduleJob(draftObject.date, async function () {

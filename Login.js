@@ -14,9 +14,13 @@ function Login ({ navigation }) {
   useEffect(async () => {
     const id = await AsyncStorage.getItem('id')
     const token = await AsyncStorage.getItem('id')
-    if (token || id) {
+    const email = await AsyncStorage.getItem('email')
+    const pword = await AsyncStorage.getItem('pword')
+    if (token || id || pword || email) {
       AsyncStorage.removeItem('token') // removes any tokens or ID that are saved into storage (from a previous session without logging out properly)
       AsyncStorage.removeItem('id')
+      AsyncStorage.removeItem('email')
+      AsyncStorage.removeItem('pword')
     }
   }, [])
 
@@ -66,7 +70,8 @@ function Login ({ navigation }) {
         try {
           await AsyncStorage.setItem('token', body.token)
           await AsyncStorage.setItem('id', body.id)
-          console.log(body.token)
+          await AsyncStorage.setItem('email', email)
+          await AsyncStorage.setItem('pword', password)
         } catch (e) {
           console.log('error', e)
         }
@@ -75,8 +80,6 @@ function Login ({ navigation }) {
         setEmail('')
         setPassword('')
         navigation.navigate('LoggedIn') // navigate to loggedIn which is a tab navigator with a drawer navigator nested inside
-        // console.log(body.token)
-        // console.log(body.id)
       } else if (response.status === 400) {
         setUnsuccessful(1) // if login is not successful, display message to user explaining why
       } else {

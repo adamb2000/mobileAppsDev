@@ -80,6 +80,8 @@ function Post ({ route, navigation }) {
       const userID = body.author.user_id
       setDataArray({ key, text, time, likes, fName, sName, userEmail, userID })
       setLoaded(3)
+    } else if (response.status === 404) {
+      navigation.goBack() // if the post is not found on the server, (been deleted but list not updated), send user back
     } else {
       setLoaded(1)
     }

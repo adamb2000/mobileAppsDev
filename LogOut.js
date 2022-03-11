@@ -21,6 +21,8 @@ function LogOut ({ navigation }) {
     })
     AsyncStorage.removeItem('token') // remove token and ID from storage so the program knows there is no longer a user logged in
     AsyncStorage.removeItem('id')
+    AsyncStorage.removeItem('email')
+    AsyncStorage.removeItem('pword')
     navigation.navigate('Login') // send user back to login screen
   }
 }

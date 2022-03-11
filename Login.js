@@ -33,7 +33,7 @@ function Login ({ navigation }) {
         </View>
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} ref={input => { setInput1(input) }} placeholder='Email' onChangeText={(value) => setEmail(value)} />
-          <TextInput style={styles.input} ref={input => { setInput2(input) }} placeholder='Password' onChangeText={(value) => setPassword(value)} />
+          <TextInput style={styles.input} ref={input => { setInput2(input) }} secureTextEntry={true} placeholder='Password' onChangeText={(value) => setPassword(value)} />
         </View>
         {warning()}
         <View style={styles.buttonContainer}>
